@@ -18,6 +18,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
+
     private val jwtAuthenticationFilter: JwtAuthenticationFilter,
 ) {
 
@@ -26,6 +27,7 @@ class SecurityConfig(
         http
             .csrf { it.disable() }
             .cors { it.configurationSource(corsConfigurationSource()) }
+            .oauth2Login {it.permitAll()}
             .authorizeHttpRequests {
             it.requestMatchers(
                 "/api/v1/users/register",

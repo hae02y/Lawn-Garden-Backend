@@ -1,9 +1,14 @@
 package org.example.lawngarden.domain.mapper
 
 import org.example.lawngarden.domain.auths.enums.Role
-import org.example.lawngarden.dto.*
-import org.example.lawngarden.entity.Post
-import org.example.lawngarden.entity.User
+import org.example.lawngarden.domain.posts.dto.PostDetailResponseDto
+import org.example.lawngarden.domain.posts.dto.PostRequestDto
+import org.example.lawngarden.domain.posts.dto.PostResponseDto
+import org.example.lawngarden.domain.posts.entity.Post
+import org.example.lawngarden.domain.users.dto.RegisterRequestDto
+import org.example.lawngarden.domain.users.dto.UserDetailResponseDto
+import org.example.lawngarden.domain.users.dto.UserStatsResponseDto
+import org.example.lawngarden.domain.users.entity.User
 import java.time.LocalDate
 import java.util.*
 

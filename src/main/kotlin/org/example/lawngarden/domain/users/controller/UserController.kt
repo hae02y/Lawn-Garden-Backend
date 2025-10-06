@@ -1,8 +1,8 @@
 package org.example.lawngarden.domain.users.controller
 
-import org.example.lawngarden.dto.RegisterRequestDto
-import org.example.lawngarden.dto.UserDetailResponseDto
-import org.example.lawngarden.service.UserService
+import org.example.lawngarden.domain.users.dto.RegisterRequestDto
+import org.example.lawngarden.domain.users.dto.UserDetailResponseDto
+import org.example.lawngarden.domain.users.service.UserService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 

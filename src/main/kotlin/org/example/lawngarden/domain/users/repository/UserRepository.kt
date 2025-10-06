@@ -1,6 +1,6 @@
 package org.example.lawngarden.domain.users.repository
 
-import org.example.lawngarden.entity.User
+import org.example.lawngarden.domain.users.entity.User
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param

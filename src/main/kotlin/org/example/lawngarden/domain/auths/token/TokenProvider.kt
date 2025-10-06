@@ -5,7 +5,7 @@ import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
 import org.example.lawngarden.domain.auths.prop.JwtProperties
-import org.example.lawngarden.entity.User
+import org.example.lawngarden.domain.users.entity.User
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
 import java.util.*

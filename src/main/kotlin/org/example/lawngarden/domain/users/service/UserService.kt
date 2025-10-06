@@ -1,11 +1,13 @@
 package org.example.lawngarden.domain.users.service
 
 import org.example.lawngarden.common.exception.custom.EmailExistException
+import org.example.lawngarden.common.exception.custom.UserExistException
 import org.example.lawngarden.domain.users.dto.RegisterRequestDto
 import org.example.lawngarden.domain.users.dto.UserDetailResponseDto
 import org.example.lawngarden.domain.mapper.toUser
 import org.example.lawngarden.domain.mapper.toUserDetailResponseDto
 import org.example.lawngarden.domain.users.entity.User
+import org.example.lawngarden.domain.users.repository.UserRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service

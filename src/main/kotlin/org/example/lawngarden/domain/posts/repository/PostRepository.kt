@@ -1,8 +1,8 @@
 package org.example.lawngarden.domain.posts.repository
 
 import jakarta.persistence.Tuple
-import org.example.lawngarden.entity.Post
-import org.example.lawngarden.entity.User
+import org.example.lawngarden.domain.posts.entity.Post
+import org.example.lawngarden.domain.users.entity.User
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.EntityGraph

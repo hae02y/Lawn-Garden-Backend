@@ -1,19 +1,15 @@
 package org.example.lawngarden.domain.stats.service
 
 import jakarta.persistence.Tuple
-import org.example.lawngarden.dto.UserDetailResponseDto
-import org.example.lawngarden.dto.UserStatsResponseDto
-import org.example.lawngarden.entity.Post
-import org.example.lawngarden.entity.User
-import org.example.lawngarden.mapper.toUserDetailResponseDto
-import org.example.lawngarden.mapper.toUserStatsResponseDto
-import org.example.lawngarden.repository.PostRepository
-import org.springframework.cglib.core.Local
+import org.example.lawngarden.domain.posts.repository.PostRepository
+import org.example.lawngarden.domain.users.dto.UserStatsResponseDto
+import org.example.lawngarden.domain.users.entity.User
 import org.springframework.stereotype.Service
 import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.temporal.TemporalAdjusters
+import org.example.lawngarden.domain.mapper.toUserStatsResponseDto
+
 
 @Service
 class StatsService(
