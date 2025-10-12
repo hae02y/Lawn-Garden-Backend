@@ -13,6 +13,16 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MariaDBDialect
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-name: github
+            client-id: ${GITHUB_CLIENT_ID}
+            client-secret: ${GITHUB_CLIENT_SECRET}
+            scope: read:user, read:email
+#            redirect-uri: http://localhost:3000/login/github
 logging:
   level:
     org:
@@ -22,3 +32,5 @@ jwt:
   secret: lawn-garden-jwt-secret-key-kkk-is-not-weak-ok
   access-token-expiration: 6000000        # 100분
   refresh-token-expiration: 1209600000   # 14일
+app:
+  front-callback: "http://localhost:3000/auth/callback"

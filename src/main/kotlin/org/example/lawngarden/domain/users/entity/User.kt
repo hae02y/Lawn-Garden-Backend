@@ -13,6 +13,7 @@ import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import org.example.lawngarden.domain.auths.enums.Role
 import org.example.lawngarden.domain.posts.entity.Post
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "users")
@@ -35,8 +36,28 @@ class User(
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private var role: Role
+    private var role: Role,
+
+    @Column(name = "likes")
+    var like: String? = null,
+
+    @Column(name = "level")
+    var level: String? = null,
+
+    @Column(name = "created_at")
+    var createdAt: LocalDateTime? = null,
+
+    @Column(name = "updated_at")
+    var updatedAt: LocalDateTime? = null,
+
+    @Column(name = "deleted_at")
+    var deletedAt: LocalDateTime? = null,
+
+    @Column(name = "type")
+    var type: String? = null,
+
 ) {
     fun getPassword(): String = password
     fun getRole(): Role = role
+
 }

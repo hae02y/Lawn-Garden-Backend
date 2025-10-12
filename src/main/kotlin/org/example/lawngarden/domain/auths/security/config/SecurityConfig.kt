@@ -1,6 +1,8 @@
 package org.example.lawngarden.domain.auths.security.config
 
 import org.example.lawngarden.domain.auths.filter.JwtAuthenticationFilter
+import org.example.lawngarden.domain.auths.service.InMemoryCodeStore
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.AuthenticationManager
@@ -9,7 +11,13 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.oauth2.client.registration.ClientRegistration
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
+import org.springframework.security.oauth2.client.registration.ClientRegistrations
+import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository
+import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
@@ -18,8 +26,11 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
-
+    private val codeStore: InMemoryCodeStore,
     private val jwtAuthenticationFilter: JwtAuthenticationFilter,
+
+    @param:Value("\${app.front-callback}")
+    private val clientId: String,
 ) {
 
     @Bean
@@ -27,7 +38,6 @@ class SecurityConfig(
         http
             .csrf { it.disable() }
             .cors { it.configurationSource(corsConfigurationSource()) }
-            .oauth2Login {it.permitAll()}
             .authorizeHttpRequests {
             it.requestMatchers(
                 "/api/v1/users/register",
@@ -35,8 +45,8 @@ class SecurityConfig(
                 "/swagger-ui/**",
                 "v3/api-docs/**",
             ).permitAll()
-            it.anyRequest().authenticated()
-        }
+            it.anyRequest().authenticated() }
+            .oauth2Login {oauth -> oauth.successHandler(customOauth2SuccessHandler())}
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
         return http.build()
     }
@@ -65,4 +75,17 @@ class SecurityConfig(
         source.registerCorsConfiguration("/**", config)
         return source
     }
+
+    @Bean
+    fun customOauth2SuccessHandler() : AuthenticationSuccessHandler {
+        return AuthenticationSuccessHandler {
+            _, response, authentication ->
+            val user = authentication.principal as OAuth2User
+            val githubId = user.getAttribute<Any>("id").toString()
+            val login = user.getAttribute<String>("login") ?: "unknown"
+            val code = codeStore.issue(githubId, login)
+            response.sendRedirect("$clientId?code=$code")
+        }
+    }
+
 }
