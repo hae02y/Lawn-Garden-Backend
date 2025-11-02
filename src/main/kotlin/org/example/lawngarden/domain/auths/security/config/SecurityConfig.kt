@@ -45,11 +45,13 @@ class SecurityConfig(
             it.requestMatchers(
                 "/api/v1/users/register",
                 "/api/v1/auth/login",
+                "/api/v1/oauth/login",
                 "/swagger-ui/**",
                 "v3/api-docs/**",
             ).permitAll()
             it.anyRequest().authenticated() }
-            .oauth2Login {oauth -> oauth.successHandler(customOauth2SuccessHandler())}
+            .oauth2Login {oauth ->
+                oauth.successHandler(customOauth2SuccessHandler())}
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
         return http.build()
     }
@@ -90,7 +92,7 @@ class SecurityConfig(
             val githubId = user.getAttribute<Any>("id").toString()
             val login = user.getAttribute<String>("login") ?: "unknown"
             val code = codeStore.issue(githubId, login)
-            response.sendRedirect("$callbackUri?code=$code")
+
         }
     }
 
