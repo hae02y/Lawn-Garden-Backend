@@ -43,6 +43,7 @@ class SecurityConfig(
             .cors { it.configurationSource(corsConfigurationSource()) }
             .authorizeHttpRequests {
             it.requestMatchers(
+                "/s/**",
                 "/api/v1/users/register",
                 "/api/v1/auth/login",
                 "/api/v1/oauth/login",
