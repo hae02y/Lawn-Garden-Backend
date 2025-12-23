@@ -44,9 +44,10 @@ class SecurityConfig(
                 "/api/v1/auth/login",
                 "/swagger-ui/**",
                 "v3/api-docs/**",
+                "/api/v1/mails/**"
             ).permitAll()
             it.anyRequest().authenticated() }
-            .oauth2Login {oauth -> oauth.successHandler(customOauth2SuccessHandler())}
+//            .oauth2Login {oauth -> oauth.successHandler(customOauth2SuccessHandler())}
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
         return http.build()
     }

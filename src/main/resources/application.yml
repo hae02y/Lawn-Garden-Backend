@@ -1,6 +1,18 @@
 server:
   port: 8082
 spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: gimpanho4@gmail.com
+    password: aslb qwjy htnd sriu
+    properties:
+      mail:
+        smtp:
+          auth: true              # 사용자 인증 여부
+          timeout: 5000           # 이메일 전송 타임아웃 시간
+          starttls:
+            enable: true          # TLS를 통해 안전한 통신 사용 여부
   datasource:
     url: ${DATABASE_URL}
     driver-class-name: org.mariadb.jdbc.Driver
