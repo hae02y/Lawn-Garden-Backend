@@ -1,10 +1,10 @@
 package org.example.lawngarden.domain.posts.controller
 
 import org.example.lawngarden.domain.auths.details.UserDetailsImpl
-import org.example.lawngarden.dto.PostDetailResponseDto
-import org.example.lawngarden.dto.PostRequestDto
-import org.example.lawngarden.dto.PostResponseDto
-import org.example.lawngarden.service.PostService
+import org.example.lawngarden.domain.posts.dto.PostDetailResponseDto
+import org.example.lawngarden.domain.posts.dto.PostRequestDto
+import org.example.lawngarden.domain.posts.dto.PostResponseDto
+import org.example.lawngarden.domain.posts.service.PostService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable

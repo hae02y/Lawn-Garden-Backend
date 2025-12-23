@@ -1,6 +1,6 @@
 package org.example.lawngarden.domain.stats.controller
 
-import org.example.lawngarden.service.StatsService
+import org.example.lawngarden.domain.stats.service.StatsService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping

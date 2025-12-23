@@ -2,7 +2,7 @@ package org.example.lawngarden.domain.auths.token
 
 import com.github.benmanes.caffeine.cache.Caffeine
 import org.example.lawngarden.domain.auths.prop.JwtProperties
-import org.example.lawngarden.entity.User
+import org.example.lawngarden.domain.users.entity.User
 import org.springframework.stereotype.Component
 import java.util.concurrent.TimeUnit
 

@@ -1,7 +1,7 @@
 package org.example.lawngarden.domain.auths.service
 
 import org.example.lawngarden.domain.auths.details.UserDetailsImpl
-import org.example.lawngarden.repository.UserRepository
+import org.example.lawngarden.domain.users.repository.UserRepository
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.core.userdetails.UsernameNotFoundException
