@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing
 
 @SpringBootApplication
 @EnableConfigurationProperties(JwtProperties::class)
-@EnableJpaAuditing
 class LawngardenApplication
 fun main(args: Array<String>) {
     runApplication<LawngardenApplication>(*args)
