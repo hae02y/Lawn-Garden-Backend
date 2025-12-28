@@ -5,8 +5,8 @@ import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
-import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
+import org.example.lawngarden.common.entity.BaseEntity
 import org.example.lawngarden.domain.push.enums.MailCategory
 
 @Entity
@@ -16,12 +16,12 @@ class MailContents(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id : Long,
 
-    @OneToOne
-    var mail: Mail,
+    var name : String,
+
+    var content : String,
 
     var category: MailCategory = MailCategory.NONE,
 
     @Column(name = "site_link")
     var siteLink: String,
-
-    )
+    ) : BaseEntity()

@@ -32,7 +32,7 @@ class User(
     private var password: String,
 
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
-    var post: MutableList<Post>,
+    var post: MutableList<Post>?,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

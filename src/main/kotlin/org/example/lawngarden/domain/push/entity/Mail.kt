@@ -9,6 +9,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
+import org.example.lawngarden.common.entity.BaseEntity
 import org.example.lawngarden.domain.push.enums.MailStatus
 import org.example.lawngarden.domain.users.entity.User
 
@@ -17,19 +18,16 @@ import org.example.lawngarden.domain.users.entity.User
 class Mail(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long,
+    val id: Long? = null,
 
     @OneToOne
     @JoinColumn(name = "user_id")
     var user: User? = null,
 
-    @OneToOne
-    var userMail : Mail? = null,
-
     @Enumerated(EnumType.STRING)
     var status: MailStatus = MailStatus.ON,
 
-) {
+) : BaseEntity() {
     fun changeStatus(newStatus: MailStatus) {
         if (this.status == newStatus) return
         this.status = newStatus
