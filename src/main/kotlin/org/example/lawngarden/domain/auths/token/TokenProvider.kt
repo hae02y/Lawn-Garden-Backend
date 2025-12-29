@@ -17,7 +17,7 @@ class TokenProvider(
     private val tokenBlacklist: TokenBlacklist,
 ) {
     fun getSigningKey(secret: String): SecretKey {
-        val key = Keys.hmacShaKeyFor(secret.toByteArray())
+        val key : SecretKey = Keys.hmacShaKeyFor(secret.toByteArray())
         return key
     }
 
@@ -26,7 +26,7 @@ class TokenProvider(
             .subject(user.username)
             .issuedAt(Date())
             .expiration(Date(System.currentTimeMillis() + jwtProperties.accessTokenExpiration))
-            .signWith(getSigningKey(jwtProperties.secret), SignatureAlgorithm.HS256)
+            .signWith(getSigningKey(jwtProperties.secret), Jwts.SIG.HS256)
             .compact()
 
     fun createRefreshToken(user: User): String =
@@ -34,7 +34,7 @@ class TokenProvider(
             .subject(user.username)
             .issuedAt(Date())
             .expiration(Date(System.currentTimeMillis() + jwtProperties.refreshTokenExpiration))
-            .signWith(getSigningKey(jwtProperties.secret), SignatureAlgorithm.HS256)
+            .signWith(getSigningKey(jwtProperties.secret), Jwts.SIG.HS256)
             .compact()
 
     fun validateToken(token: String): Boolean =
