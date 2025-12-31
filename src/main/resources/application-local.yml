@@ -1,0 +1,49 @@
+server:
+  port: 8080
+spring:
+  data:
+    mongodb:
+      uri: ${MONGODB_URL}
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${SMTP_USERNAME}
+    password: ${SMTP_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true              # 사용자 인증 여부
+          timeout: 5000           # 이메일 전송 타임아웃 시간
+          starttls:
+            enable: true          # TLS를 통해 안전한 통신 사용 여부
+  datasource:
+    url: ${DATABASE_URL}
+    driver-class-name: org.mariadb.jdbc.Driver
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MariaDBDialect
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-name: github
+            client-id: ${LOCAL_GITHUB_CLIENT_ID}
+            client-secret: ${LOCAL_GITHUB_CLIENT_SECRET}
+            scope: read:user, read:email
+            redirect-uri: http://localhost:8080/login/oauth2/code/github
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG  # Spring Security ?? ??
+jwt:
+  secret: lawn-garden-jwt-secret-key-kkk-is-not-weak-ok
+  access-token-expiration: 6000000        # 100분
+  refresh-token-expiration: 1209600000   # 14일
