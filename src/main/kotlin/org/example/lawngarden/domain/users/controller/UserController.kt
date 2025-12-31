@@ -23,7 +23,7 @@ class UserController(
         return ResponseEntity.ok(findUser)
     }
 
-    @GetMapping()
+    @GetMapping
     fun getUserList():  ResponseEntity<List<UserDetailResponseDto>> {
         val findAllUser : List<UserDetailResponseDto> = userService.findAllUser()
         return ResponseEntity.ok(findAllUser)

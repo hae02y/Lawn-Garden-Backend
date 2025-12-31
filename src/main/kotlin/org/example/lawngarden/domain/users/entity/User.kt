@@ -11,6 +11,8 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
+import org.example.lawngarden.common.entity.BaseEntity
+import org.example.lawngarden.domain.auths.enums.LoginType
 import org.example.lawngarden.domain.auths.enums.Role
 import org.example.lawngarden.domain.posts.entity.Post
 import java.time.LocalDateTime
@@ -28,8 +30,8 @@ class User(
     @Column(nullable = false)
     var email: String,
 
-    @Column(nullable = false)
-    private var password: String,
+    @Column(nullable = true)
+    private var password: String?,
 
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
     var post: MutableList<Post>?,
@@ -39,25 +41,20 @@ class User(
     private var role: Role,
 
     @Column(name = "likes")
-    var like: String? = null,
+    var like: Long = 0L,
 
     @Column(name = "level")
-    var level: String? = null,
-
-    @Column(name = "created_at")
-    var createdAt: LocalDateTime? = null,
-
-    @Column(name = "updated_at")
-    var updatedAt: LocalDateTime? = null,
+    var level: Long = 0L,
 
     @Column(name = "deleted_at")
     var deletedAt: LocalDateTime? = null,
 
     @Column(name = "type")
-    var type: String? = null,
+    @Enumerated(EnumType.STRING)
+    var type: LoginType = LoginType.NONE,
 
-) {
-    fun getPassword(): String = password
+    ) : BaseEntity() {
+    fun getPassword(): String? = password
     fun getRole(): Role = role
 
 }

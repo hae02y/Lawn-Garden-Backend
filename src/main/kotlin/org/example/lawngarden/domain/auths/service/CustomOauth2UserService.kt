@@ -1,6 +1,7 @@
 package org.example.lawngarden.domain.auths.service
 
 import org.example.lawngarden.domain.auths.dto.CustomOAuth2User
+import org.example.lawngarden.domain.auths.enums.LoginType
 import org.example.lawngarden.domain.mapper.toUser
 import org.example.lawngarden.domain.users.dto.RegisterRequestDto
 import org.example.lawngarden.domain.users.entity.User
@@ -23,10 +24,10 @@ class CustomOauth2UserService(
 
         val attributes = oAuth2User.attributes
         val email = attributes["email"].toString()
-        val githubId = attributes["id"].toString()
+        val userName = attributes["login"].toString()
 
         val user : User = (userRepository.findByEmail((email))
-            ?: this.saveOath2User(registerRequestDto = RegisterRequestDto(githubId, email, githubId)))
+            ?: this.saveOath2User(registerRequestDto = RegisterRequestDto(userName, null, email, LoginType.KAKAO)))
         return CustomOAuth2User(user, attributes) // 3. 성공한 유저 정보를 SuccessHandler로 넘김
     }
 
