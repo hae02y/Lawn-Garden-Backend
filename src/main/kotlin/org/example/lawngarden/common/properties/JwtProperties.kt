@@ -1,4 +1,4 @@
-package org.example.lawngarden.domain.auths.prop
+package org.example.lawngarden.common.properties
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 

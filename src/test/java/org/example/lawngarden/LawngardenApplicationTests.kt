@@ -68,4 +68,6 @@ class LawngardenApplicationTests(
             MailContents(null, "name", "contents", MailCategory.NONE, "test.com", Instant.now(), Instant.now())
         mailContentsRepository.save(mailContents)
     }
+
+
 }

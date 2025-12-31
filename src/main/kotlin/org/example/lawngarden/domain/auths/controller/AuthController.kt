@@ -51,7 +51,6 @@ class AuthController(
     }
 
 
-
     private fun authentication(username:String, password:String): Authentication {
         val token = UsernamePasswordAuthenticationToken(username, password);
         return authenticationManager.authenticate(token);
