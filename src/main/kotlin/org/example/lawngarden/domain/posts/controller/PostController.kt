@@ -8,9 +8,11 @@ import org.example.lawngarden.domain.posts.service.PostService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder
 
 @RestController
 @RequestMapping("/api/v1/posts")
@@ -41,9 +43,16 @@ class PostController(
     fun postPost(
         @AuthenticationPrincipal userDetailsImpl: UserDetailsImpl,
         @ModelAttribute postRequestDto: PostRequestDto,
-    ) {
+    ) :ResponseEntity<Any?> {
         val user = userDetailsImpl.user
-        postService.savePost(postRequestDto, user)
+        val savePost = postService.savePost(postRequestDto, user)
+
+        val location = ServletUriComponentsBuilder
+            .fromCurrentRequest()
+            .path("/{id}")
+            .buildAndExpand(savePost.id)
+            .toUri()
+        return ResponseEntity.created(location).build()
     }
 
     //포스트 수정
@@ -52,10 +61,16 @@ class PostController(
         @PathVariable postId: Long,
         @AuthenticationPrincipal userDetailsImpl: UserDetailsImpl,
         @ModelAttribute postRequestDto: PostRequestDto
-    ) {
+    ):ResponseEntity<Any?>  {
         val user = userDetailsImpl.user
-        postService.updatePost(postRequestDto, postId, user)
+        val updatePost = postService.updatePost(postRequestDto, postId, user)
 
+        val location = ServletUriComponentsBuilder
+            .fromCurrentRequest()
+            .path("/{id}")
+            .buildAndExpand(updatePost.id)
+            .toUri()
+        return ResponseEntity.created(location).build<Any?>()
     }
 
     //포스트 삭제

@@ -1,6 +1,7 @@
 package org.example.lawngarden;
 
 import org.assertj.core.api.Assertions.*
+import org.example.lawngarden.domain.auths.enums.LoginType
 import org.example.lawngarden.domain.auths.enums.Role
 import org.example.lawngarden.domain.push.entity.MailContents
 import org.example.lawngarden.domain.push.enums.MailCategory
@@ -36,12 +37,8 @@ class LawngardenApplicationTests(
     @BeforeEach
     fun setUp() {
         val user = User(
-            null, "haeyoung", "godud1118@naver.com", "qwe123,.", role = Role.USER, type = null,
+            null, "haeyoung", "godud1118@naver.com", "qwe123,.", role = Role.USER, type = LoginType.NONE,
             post = null,
-            like = null,
-            level = null,
-            createdAt = LocalDateTime.now(),
-            updatedAt = LocalDateTime.now(),
             deletedAt = null
         )
         userRepository.save(user)

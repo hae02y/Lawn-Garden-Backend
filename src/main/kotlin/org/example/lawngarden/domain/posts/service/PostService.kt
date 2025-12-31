@@ -1,5 +1,6 @@
 package org.example.lawngarden.domain.posts.service
 
+import org.example.lawngarden.domain.images.service.ImageService
 import org.example.lawngarden.domain.mapper.toPost
 import org.example.lawngarden.domain.mapper.toPostDetailResponseDto
 import org.example.lawngarden.domain.mapper.toPostResponseDto
@@ -22,6 +23,7 @@ import java.util.NoSuchElementException
 @Service
 class PostService(
     private val postRepository: PostRepository,
+    private val imageService: ImageService,
 ) {
 
     fun findAllPost(pageData: Pageable, keyword: String): Page<PostResponseDto> {
@@ -39,27 +41,29 @@ class PostService(
         return postDetailResponseDto
     }
 
-    fun savePost(post: PostRequestDto, user: User) {
-        if (post.link == null || post.imageFile!!.isEmpty) {
-            throw IllegalArgumentException("이미지는 필수입니다.")
-        }
+    @Transactional
+    fun savePost(post: PostRequestDto, user: User): Post {
 
-        if (postRepository.existsPostByUserAndCreatedDate(user, LocalDate.now())) {
-            throw RuntimeException("이미 등록된 Post가 있습니다.")
-        }
+        val maxSize = 3 * 1024 * 1024
 
-        if (post.imageFile!!.contentType != "image/png") throw IllegalArgumentException("PNG 형식의 이미지만 업로드할 수 있습니다.")
-        postRepository.save(post.toPost(user))
+        if (post.link == null || post.imageFile!!.isEmpty) throw IllegalArgumentException("이미지는 필수입니다.")
+        if (postRepository.existsPostByUserAndCreatedDate(user, LocalDate.now())) throw RuntimeException("이미 등록된 Post가 있습니다.")
+        if (!post.imageFile!!.contentType!!.startsWith("image/")) throw IllegalArgumentException("이미지형식만 업로드할 수 있습니다.")
+        if (post.imageFile!!.size > maxSize) throw IllegalArgumentException("파일 용량이 너무 큽니다.(최대 3MB)")
+        val imageName = imageService.upload(post.imageFile!!)
+
+        return postRepository.save(post.toPost(user, imageName))
     }
 
     @Transactional
-    fun updatePost(post: PostRequestDto, postId: Long, user: User) {
-        val findPostById =
-            postRepository.findPostById(postId) ?: throw NoSuchElementException("해당 ID의 게시글이 존재하지 않습니다. id=$postId")
-        if (findPostById.user.id != user.id) {
-            throw AccessDeniedException("유저가 없습니다.")
-        }
-        postRepository.save(findPostById.updatePost(post))
+    fun updatePost(post: PostRequestDto, postId: Long, user: User): Post {
+        val findPostById = postRepository.findPostById(postId) ?: throw NoSuchElementException("해당 ID의 게시글이 존재하지 않습니다. id=$postId")
+        if (findPostById.user.id != user.id)  throw AccessDeniedException("유저가 없습니다.")
+
+        val imageName = if(post.imageFile != null) imageService.upload(post.imageFile!!)
+                        else findPostById.image
+
+        return postRepository.save(findPostById.updatePost(post, imageName))
     }
 
     fun deletePost(postId: Long, user: User) {

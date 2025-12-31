@@ -9,5 +9,5 @@ data class PostDetailResponseDto (
     var createdDate: LocalDate?,
     var user: UserDetailResponseDto?,
     var contents : String?,
-    var base64Image: String?
+    var image: String?
 )

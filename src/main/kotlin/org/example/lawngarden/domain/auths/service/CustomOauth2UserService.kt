@@ -20,14 +20,15 @@ class CustomOauth2UserService(
 
     override fun loadUser(userRequest: OAuth2UserRequest?): OAuth2User? {
 
-        val oAuth2User = super.loadUser(userRequest) // 1. GitHub 정보 획득
+        val oAuth2User = super.loadUser(userRequest)
 
         val attributes = oAuth2User.attributes
+        println("GitHub Attributes: ${oAuth2User.attributes}") // 여기서 데이터가 오는지 확인!
         val email = attributes["email"].toString()
         val userName = attributes["login"].toString()
 
         val user : User = (userRepository.findByEmail((email))
-            ?: this.saveOath2User(registerRequestDto = RegisterRequestDto(userName, null, email, LoginType.KAKAO)))
+            ?: this.saveOath2User(registerRequestDto = RegisterRequestDto(userName, null, email, LoginType.GITHUB)))
         return CustomOAuth2User(user, attributes) // 3. 성공한 유저 정보를 SuccessHandler로 넘김
     }
 
