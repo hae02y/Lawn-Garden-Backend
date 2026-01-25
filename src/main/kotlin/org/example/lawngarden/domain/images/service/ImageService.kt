@@ -10,7 +10,7 @@ import java.util.UUID
 
 @Service
 class ImageService(
-    @Value("\${image.upload-path}") private val uploadPath: String
+    @Value("\${image.path}") private val uploadPath: String
 ) {
 
     fun upload(file: MultipartFile) : String? {

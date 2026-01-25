@@ -56,4 +56,4 @@ jwt:
   refresh-token-expiration: 1209600000   # 14일
 
 image:
-  upload-path: "/var/www/images"
+  path: ./

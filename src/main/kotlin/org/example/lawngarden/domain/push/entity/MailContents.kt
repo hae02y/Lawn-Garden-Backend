@@ -10,6 +10,7 @@ import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.mongodb.core.index.CompoundIndex
 import org.springframework.data.mongodb.core.mapping.Document
+import org.springframework.data.mongodb.core.mapping.Field
 import java.time.Instant
 
 @Document(collection = "mail_contents")
@@ -24,7 +25,7 @@ class MailContents(
 
     var category: MailCategory = MailCategory.NONE,
 
-    @Column(name = "site_link")
+    @Field(name = "siteLink")
     var siteLink: String,
 
     @CreatedDate

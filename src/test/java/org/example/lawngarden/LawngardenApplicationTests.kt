@@ -32,16 +32,9 @@ class LawngardenApplicationTests(
     @Autowired private val userRepository: UserRepository,
     @Autowired private val mailRepository: MailRepository,
     @Autowired private val mailContentsRepository: MailContentsRepository,
-    @Autowired private val mailSender: JavaMailSender
 ) {
     @BeforeEach
     fun setUp() {
-        val user = User(
-            null, "haeyoung", "godud1118@naver.com", "qwe123,.", role = Role.USER, type = LoginType.NONE,
-            post = null,
-            deletedAt = null
-        )
-        userRepository.save(user)
     }
 
     @Test
@@ -62,9 +55,14 @@ class LawngardenApplicationTests(
     @DisplayName("Insert 테스트")
     fun insert() {
         val mailContents =
-            MailContents(null, "name", "contents", MailCategory.NONE, "test.com", Instant.now(), Instant.now())
+            MailContents(null, "문제입니다", "JPA를 합니다!", MailCategory.BACKEND, "test.com", Instant.now(), Instant.now())
         mailContentsRepository.save(mailContents)
     }
 
+    @Test
+    @DisplayName("메일 전송 테스트")
+    fun mailSend() {
+
+    }
 
 }

@@ -34,16 +34,26 @@ spring:
         registration:
           github:
             client-name: github
-            client-id: ${GITHUB_CLIENT_ID}
-            client-secret: ${GITHUB_CLIENT_SECRET}
-            scope: read:user, read:email
-            redirect-uri: https://api.lawngarden.shop/login/oauth2/code/github
+            client-id: ${LOCAL_GITHUB_CLIENT_ID}
+            client-secret: ${LOCAL_GITHUB_CLIENT_SECRET}
+            scope:
+              - read:user
+              - read:email
+            redirect-uri: "http://localhost:8080/login/oauth2/code/github"
 logging:
   level:
     org:
       springframework:
-        security: DEBUG  # Spring Security ?? ??
+        security: DEBUG
+    org.springframework.security.oauth2: DEBUG
+    org.springframework.web.client.RestTemplate: DEBUG
+    org.springframework.security.oauth2.client.authentication.OAuth2LoginAuthenticationProvider: TRACE
+    org.apache.hc.client5.http.wire: DEBUG
+
 jwt:
   secret: lawn-garden-jwt-secret-key-kkk-is-not-weak-ok
   access-token-expiration: 6000000        # 100분
   refresh-token-expiration: 1209600000   # 14일
+
+image:
+  path: "/var/www/images"
