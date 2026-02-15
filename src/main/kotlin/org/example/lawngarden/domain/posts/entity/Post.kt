@@ -17,20 +17,16 @@ class Post(
     var link: String? = null,
 
     @Column(nullable = true)
-    var createdDate: LocalDate? = null,
+    var createdDate: LocalDate? = LocalDate.now(),
 
     @Column(nullable = true)
-    var updateDate: LocalDate? = null,
+    var updateDate: LocalDate? = LocalDate.now(),
 
     @Column(nullable = true)
     var contents: String? = null,
 
-    @Lob
-    @Column(columnDefinition = "LONGBLOB")
-    var image: ByteArray,
-
-    @Transient
-    var imageFile: MultipartFile? = null,
+    @Column(nullable = true)
+    var image: String?,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

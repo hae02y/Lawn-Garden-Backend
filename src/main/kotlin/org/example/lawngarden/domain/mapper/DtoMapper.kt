@@ -19,6 +19,7 @@ fun RegisterRequestDto.toUser(): User = User(
     email = this.email,
     id = null,
     role = Role.USER,
+    type = this.type,
     post = mutableListOf()
 )
 
@@ -38,7 +39,8 @@ fun User.toUserStatsResponseDto(count : Long): UserStatsResponseDto = UserStatsR
 fun Post.toPostResponseDto() : PostResponseDto = PostResponseDto(
         id = this.id,
         createdDate = this.createdDate,
-        user = this.user.toUserDetailResponseDto()
+        user = this.user.toUserDetailResponseDto(),
+        image = this.image,
 )
 
 fun Post.toPostDetailResponseDto() : PostDetailResponseDto = PostDetailResponseDto(
@@ -47,33 +49,27 @@ fun Post.toPostDetailResponseDto() : PostDetailResponseDto = PostDetailResponseD
     user = this.user.toUserDetailResponseDto(),
     link = this.link,
     contents = this.contents,
-    base64Image  = this.image?.takeIf { it.isNotEmpty() }
-        ?.let { Base64.getEncoder().encodeToString(it) }
+    image = this.image
 )
 
 
-fun PostRequestDto.toPost(user: User): Post {
+fun PostRequestDto.toPost(user: User, imageName: String?): Post {
     return Post(
         id = null,
         link = this.link,
-        createdDate = LocalDate.now(),
         contents = this.contents,
-        image = imageFile!!.bytes, // 변환 핵심!
-        imageFile = this.imageFile, // Transient 필드, 실제 DB 저장 X
+        image = imageName, // 변환 핵심!
         user = user
     )
 }
 
-fun Post.updatePost(postRequestDto: PostRequestDto) : Post {
+fun Post.updatePost(postRequestDto: PostRequestDto, imageName: String?) : Post {
     return Post(
         id = this.id,
         user = this.user,
         link = postRequestDto.link,
-        createdDate = this.createdDate,
-        updateDate = LocalDate.now(),
         contents = postRequestDto.contents,
-        imageFile = postRequestDto.imageFile,
-        image = imageFile!!.bytes,
+        image = imageName,
     )
 }
 

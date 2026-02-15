@@ -28,7 +28,7 @@ class AuthController(
     fun login(@RequestBody loginRequest : LoginRequest): ResponseEntity<LoginResponse> {
         val prefix : String = "Bearer "
 
-        val authentication = this.authentication(loginRequest.username, loginRequest.password)
+        val authentication : Authentication = this.authentication(loginRequest.username, loginRequest.password)
         val userDetails = authentication.principal as UserDetailsImpl
         val user : User = userDetails.user
 
@@ -49,7 +49,6 @@ class AuthController(
 
         return ResponseEntity.noContent().build()
     }
-
 
 
     private fun authentication(username:String, password:String): Authentication {

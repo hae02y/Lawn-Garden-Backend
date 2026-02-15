@@ -4,7 +4,7 @@ import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
-import org.example.lawngarden.domain.auths.prop.JwtProperties
+import org.example.lawngarden.common.properties.JwtProperties
 import org.example.lawngarden.domain.users.entity.User
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
@@ -17,7 +17,7 @@ class TokenProvider(
     private val tokenBlacklist: TokenBlacklist,
 ) {
     fun getSigningKey(secret: String): SecretKey {
-        val key = Keys.hmacShaKeyFor(secret.toByteArray())
+        val key : SecretKey = Keys.hmacShaKeyFor(secret.toByteArray())
         return key
     }
 
@@ -26,7 +26,7 @@ class TokenProvider(
             .subject(user.username)
             .issuedAt(Date())
             .expiration(Date(System.currentTimeMillis() + jwtProperties.accessTokenExpiration))
-            .signWith(getSigningKey(jwtProperties.secret), SignatureAlgorithm.HS256)
+            .signWith(getSigningKey(jwtProperties.secret), Jwts.SIG.HS256)
             .compact()
 
     fun createRefreshToken(user: User): String =
@@ -34,7 +34,7 @@ class TokenProvider(
             .subject(user.username)
             .issuedAt(Date())
             .expiration(Date(System.currentTimeMillis() + jwtProperties.refreshTokenExpiration))
-            .signWith(getSigningKey(jwtProperties.secret), SignatureAlgorithm.HS256)
+            .signWith(getSigningKey(jwtProperties.secret), Jwts.SIG.HS256)
             .compact()
 
     fun validateToken(token: String): Boolean =
