@@ -33,7 +33,7 @@ dependencies {
 
     implementation("com.github.ben-manes.caffeine:caffeine:3.2.0")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13")
-
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation ("io.jsonwebtoken:jjwt-api:0.12.6")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")

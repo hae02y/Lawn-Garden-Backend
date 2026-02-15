@@ -6,5 +6,5 @@ data class RegisterRequestDto(
     var username: String,
     var password: String?,
     var email: String,
-    var type: LoginType
+    var type: LoginType = LoginType.NONE,
 )
