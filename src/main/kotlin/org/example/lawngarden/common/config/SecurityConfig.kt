@@ -51,7 +51,8 @@ class SecurityConfig(
                 "/api/v1/auth/login",
                 "/swagger-ui/**",
                 "v3/api-docs/**",
-                "/api/v1/mails/**"
+                "/api/v1/mails/**",
+//                "/api/v1/oauth2/login/code/**"
             ).permitAll()
             it.anyRequest().authenticated() }
             .oauth2Login {oauth ->
@@ -88,19 +89,19 @@ class SecurityConfig(
     }
 
     @Bean
-    fun customOauth2SuccessHandler() : AuthenticationSuccessHandler {
+    fun customOauth2SuccessHandler(): AuthenticationSuccessHandler {
         return AuthenticationSuccessHandler { _, response, authentication ->
             val oAuth2User = authentication.principal as CustomOAuth2User
-            val user : User = oAuth2User.user
+            val user: User = oAuth2User.user
             val accessToken = tokenProvider.createAccessToken(user)
             val refreshToken = tokenProvider.createRefreshToken(user)
-
-            val loginResponse = LoginResponse(accessToken, refreshToken, user.toUserDetailResponseDto())
-
-            response.contentType = "application/json"
-            response.characterEncoding = "UTF-8"
-
-            response.writer.write(objectMapper.writeValueAsString(loginResponse))
+            val username = user.username
+            // 프론트로 리다이렉트 (쿼리로 전달)
+            val redirectUrl = "http://localhost:5173/oauth/github" +
+                    "?accessToken=$accessToken" +
+                    "&refreshToken=$refreshToken" +
+                    "&username=$username"
+            response.sendRedirect(redirectUrl)
         }
     }
 
