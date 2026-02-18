@@ -26,10 +26,10 @@ class PostService(
     private val imageService: ImageService,
 ) {
 
-    fun findAllPost(pageData: Pageable, keyword: String): Page<PostResponseDto> {
+    fun findAllPost(pageData: Pageable, keyword: String?): Page<PostResponseDto> {
 
         val findAll: Page<Post> =
-            if (keyword.isEmpty()) postRepository.findAllByOrderByCreatedDateDescIdDesc(pageData)
+            if (keyword.isNullOrBlank()) postRepository.findAllByOrderByCreatedDateDescIdDesc(pageData)
              else postRepository.findAllByUserUsernameContainingOrderByCreatedDateDescIdDesc(keyword, pageData)
 
         return findAll.map { x -> x?.toPostResponseDto() }

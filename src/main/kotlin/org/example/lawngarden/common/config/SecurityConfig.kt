@@ -96,11 +96,13 @@ class SecurityConfig(
             val accessToken = tokenProvider.createAccessToken(user)
             val refreshToken = tokenProvider.createRefreshToken(user)
             val username = user.username
+            val userId = user.id
             // 프론트로 리다이렉트 (쿼리로 전달)
             val redirectUrl = "http://localhost:5173/oauth/github" +
                     "?accessToken=$accessToken" +
                     "&refreshToken=$refreshToken" +
-                    "&username=$username"
+                    "&username=$username" +
+                    "&userId=$userId"
             response.sendRedirect(redirectUrl)
         }
     }

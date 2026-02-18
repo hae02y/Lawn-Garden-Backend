@@ -24,7 +24,7 @@ class PostController(
     fun getAllPosts(
         @RequestParam("page", defaultValue = "0") page: Int,
         @RequestParam("size", defaultValue = "10") size: Int,
-        @RequestParam("keyword", required = false) keyword: String
+        @RequestParam("keyword", required = false) keyword: String?
     ): ResponseEntity<Page<PostResponseDto>> {
         val pageData: Pageable = PageRequest.of(page, size)
         val findAllPost: Page<PostResponseDto> = postService.findAllPost(pageData, keyword)
