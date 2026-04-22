@@ -1,25 +1,22 @@
-package org.example.lawngarden.domain.auths.security.config
+package org.example.lawngarden.common.config
 
+import org.example.lawngarden.domain.auths.dto.CustomOAuth2User
 import org.example.lawngarden.domain.auths.filter.JwtAuthenticationFilter
-import org.example.lawngarden.domain.auths.security.ouath2.Oauth2Service
-import org.example.lawngarden.domain.auths.service.InMemoryCodeStore
-import org.hibernate.internal.util.collections.Stack
-import org.springframework.beans.factory.annotation.Value
+import org.example.lawngarden.domain.auths.service.CustomOauth2UserService
+import org.example.lawngarden.domain.auths.token.TokenProvider
+import org.example.lawngarden.domain.users.entity.User
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
-import org.springframework.security.oauth2.client.registration.ClientRegistration
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
-import org.springframework.security.oauth2.client.registration.ClientRegistrations
-import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository
-import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler
+import org.springframework.security.web.authentication.HttpStatusEntryPoint
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
@@ -28,12 +25,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
-    private val codeStore: InMemoryCodeStore,
+    private val customOauth2UserService: CustomOauth2UserService,
     private val jwtAuthenticationFilter: JwtAuthenticationFilter,
-    private val oath2Service : Oauth2Service,
-
-    @param:Value("\${app.front-callback}")
-    private val callbackUri: String,
+    private val tokenProvider: TokenProvider,
 ) {
 
     @Bean
@@ -42,18 +36,25 @@ class SecurityConfig(
             .csrf { it.disable() }
             .cors { it.configurationSource(corsConfigurationSource()) }
             .authorizeHttpRequests {
-            it.requestMatchers(
-                "/s/**",
-                "/api/v1/users/register",
-                "/api/v1/auth/login",
-                "/api/v1/oauth/login",
-                "/swagger-ui/**",
-                "v3/api-docs/**",
-            ).permitAll()
-            it.anyRequest().authenticated() }
-            .oauth2Login {oauth ->
-                oauth.successHandler(customOauth2SuccessHandler())}
+                it.requestMatchers(
+                    "/",
+                    "/api/v1/users/register",
+                    "/api/v1/auth/login",
+                    "/api/v1/auth/logout",
+                    "/api/v1/oauth/**",
+                    "/api/v1/oauth2/**",
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**",
+                    "/api/v1/mails/**",
+                ).permitAll()
+                it.anyRequest().authenticated()
+            }
+            .oauth2Login { oauth ->
+                oauth.userInfoEndpoint { it.userService(customOauth2UserService) }
+                    .successHandler(customOauth2SuccessHandler())
+            }
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .exceptionHandling { it.authenticationEntryPoint(HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)) }
         return http.build()
     }
 
@@ -61,7 +62,7 @@ class SecurityConfig(
     fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
 
     @Bean
-    fun authenticationManager(authConfig: AuthenticationConfiguration) : AuthenticationManager {
+    fun authenticationManager(authConfig: AuthenticationConfiguration): AuthenticationManager {
         return authConfig.authenticationManager
     }
 
@@ -72,7 +73,7 @@ class SecurityConfig(
             "http://localhost:3000",
             "http://localhost:5173",
             "https://lawngarden.netlify.app"
-            )
+        )
         config.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
         config.allowedHeaders = listOf("*")
         config.allowCredentials = false
@@ -83,18 +84,21 @@ class SecurityConfig(
     }
 
     @Bean
-    fun customOauth2SuccessHandler() : AuthenticationSuccessHandler {
-        return AuthenticationSuccessHandler {
-            _, response, authentication ->
-            val user = authentication.principal as OAuth2User
+    fun customOauth2SuccessHandler(): AuthenticationSuccessHandler {
+        return AuthenticationSuccessHandler { _, response, authentication ->
+            val oAuth2User = authentication.principal as CustomOAuth2User
+            val user: User = oAuth2User.user
+            val accessToken = tokenProvider.createAccessToken(user)
+            val refreshToken = tokenProvider.createRefreshToken(user)
+            val username = user.username
+            val userId = user.id
 
-            oath2Service.findUser(user);
-
-            val githubId = user.getAttribute<Any>("id").toString()
-            val login = user.getAttribute<String>("login") ?: "unknown"
-            val code = codeStore.issue(githubId, login)
-
+            val redirectUrl = "http://localhost:5173/oauth/github" +
+                "?accessToken=$accessToken" +
+                "&refreshToken=$refreshToken" +
+                "&username=$username" +
+                "&userId=$userId"
+            response.sendRedirect(redirectUrl)
         }
     }
-
 }

@@ -6,5 +6,6 @@ import java.time.LocalDate
 data class PostResponseDto (
     val id: Long?,
     var createdDate: LocalDate?,
-    var user: UserDetailResponseDto
+    var user: UserDetailResponseDto,
+    val image : String?,
 )

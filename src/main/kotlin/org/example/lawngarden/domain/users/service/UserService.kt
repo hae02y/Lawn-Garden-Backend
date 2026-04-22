@@ -2,6 +2,7 @@ package org.example.lawngarden.domain.users.service
 
 import org.example.lawngarden.common.exception.custom.EmailExistException
 import org.example.lawngarden.common.exception.custom.UserExistException
+import org.example.lawngarden.domain.auths.enums.LoginType
 import org.example.lawngarden.domain.users.dto.RegisterRequestDto
 import org.example.lawngarden.domain.users.dto.UserDetailResponseDto
 import org.example.lawngarden.domain.mapper.toUser
@@ -25,6 +26,7 @@ class UserService(
         verifyUserName(registerRequestDto.username)
 
         registerRequestDto.password = passwordEncoder.encode(registerRequestDto.password)
+        registerRequestDto.type = LoginType.NONE
         val save : User = userRepository.save(registerRequestDto.toUser())
         return save.toUserDetailResponseDto()
     }

@@ -3,6 +3,21 @@ server:
 spring:
   config:
     import: optional:file:.env[.properties]
+  data:
+    mongodb:
+      uri: ${MONGODB_URL}
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${SMTP_USERNAME}
+    password: ${SMTP_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true              # 사용자 인증 여부
+          timeout: 5000           # 이메일 전송 타임아웃 시간
+          starttls:
+            enable: true          # TLS를 통해 안전한 통신 사용 여부
   datasource:
     url: ${DATABASE_URL}
     driver-class-name: org.mariadb.jdbc.Driver
@@ -10,7 +25,7 @@ spring:
     password: ${DATABASE_PASSWORD}
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
@@ -24,7 +39,7 @@ spring:
             client-id: ${GITHUB_CLIENT_ID}
             client-secret: ${GITHUB_CLIENT_SECRET}
             scope: read:user, read:email
-#            redirect-uri: http://localhost:3000/login/github
+            redirect-uri: https://api.lawngarden.shop/login/oauth2/code/github
 logging:
   level:
     org:
@@ -36,3 +51,5 @@ jwt:
   refresh-token-expiration: 1209600000   # 14일
 app:
   front-callback: "http://localhost:3000/auth/callback"
+image:
+  path: ./
