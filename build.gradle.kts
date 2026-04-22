@@ -56,6 +56,15 @@ dependencies {
 //    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
+<<<<<<< HEAD
 tasks.test {
     useJUnitPlatform()
+}
+
+tasks.bootJar {
+    archiveFileName.set("lawngarden.jar")
+}
+
+tasks.jar {
+    enabled = false
 }
