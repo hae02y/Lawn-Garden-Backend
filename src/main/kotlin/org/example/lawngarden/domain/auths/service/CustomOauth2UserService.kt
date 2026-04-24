@@ -23,7 +23,6 @@ class CustomOauth2UserService(
         val oAuth2User = super.loadUser(userRequest)
 
         val attributes = oAuth2User.attributes
-        println("GitHub Attributes: ${oAuth2User.attributes}") // 여기서 데이터가 오는지 확인!
         val email = attributes["email"].toString()
         val userName = attributes["login"].toString()
 

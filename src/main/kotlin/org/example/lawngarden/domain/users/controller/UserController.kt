@@ -17,7 +17,6 @@ class UserController(
     @PostMapping("/register")
     @Operation(summary = "회원가입")
     fun register(@RequestBody registerRequestDto : RegisterRequestDto) : ResponseEntity<UserDetailResponseDto> {
-        println(registerRequestDto)
         val saveUser = userService.saveUser(registerRequestDto)
         return ResponseEntity.ok().body(saveUser)
     }

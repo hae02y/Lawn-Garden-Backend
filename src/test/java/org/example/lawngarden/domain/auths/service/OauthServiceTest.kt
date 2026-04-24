@@ -20,7 +20,6 @@ class OauthServiceTest(
         val generateRedirectUrl = oauthService.generateRedirectUrl()
 
         //then
-        println(generateRedirectUrl)
         Assertions.assertThat(generateRedirectUrl).isNotBlank
 
     }

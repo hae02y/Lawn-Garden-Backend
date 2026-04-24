@@ -57,7 +57,7 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
           port: ${{ secrets.SSH_PORT }}
-          source: build/libs/*.jar
+          source: build/libs/lawngarden.jar
           target: /home/lawn
           overwrite: true
 
@@ -90,6 +90,12 @@ jobs:
               . /home/lawn/.env
               set +a
             fi
-            jar_path=$(ls /home/lawn/*.jar | head -n 1)
+            find /home/lawn -maxdepth 1 -type f -name '*.jar' ! -name 'lawngarden.jar' -delete || true
+            jar_path=/home/lawn/lawngarden.jar
+            if [ ! -f "$jar_path" ]; then
+              echo "missing jar: $jar_path"
+              ls -l /home/lawn/*.jar || true
+              exit 1
+            fi
             nohup java -jar "$jar_path" --spring.config.additional-location=file:/home/lawn/ > /home/lawn/lawngarden.log 2>&1 &
             echo $! > /home/lawn/lawngarden.pid
