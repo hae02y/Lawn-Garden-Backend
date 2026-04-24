@@ -85,6 +85,11 @@ jobs:
               kill "$(cat /home/lawn/lawngarden.pid)" || true
               rm -f /home/lawn/lawngarden.pid
             fi
+            if [ -f /home/lawn/.env ]; then
+              set -a
+              . /home/lawn/.env
+              set +a
+            fi
             jar_path=$(ls /home/lawn/*.jar | head -n 1)
             nohup java -jar "$jar_path" --spring.config.additional-location=file:/home/lawn/ > /home/lawn/lawngarden.log 2>&1 &
             echo $! > /home/lawn/lawngarden.pid
