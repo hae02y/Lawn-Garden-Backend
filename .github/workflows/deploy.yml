@@ -20,6 +20,17 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Debug SSH endpoint
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+        run: |
+          echo "runner_ip=$(curl -s https://api.ipify.org)"
+          echo "ssh_host=$SSH_HOST"
+          echo "ssh_port=$SSH_PORT"
+          getent hosts "$SSH_HOST" || true
+          nc -vz -w 5 "$SSH_HOST" "$SSH_PORT"
+
       - name: Test SSH connection
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -27,6 +38,7 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
           port: ${{ secrets.SSH_PORT }}
+          debug: true
           script: echo connected
 
       - name: Make Gradle wrapper executable
