@@ -48,7 +48,10 @@ jobs:
         run: gradle clean bootJar -x test
 
       - name: Verify build artifact
-        run: ls -l build/libs
+        run: |
+          cp build/libs/lawngarden.jar build/libs/lawngarden-${{ github.sha }}.jar
+          ls -l build/libs
+          sha256sum build/libs/lawngarden-${{ github.sha }}.jar
 
       - name: Upload JAR to server staging dir
         uses: appleboy/scp-action@v0.1.7
@@ -57,7 +60,7 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
           port: ${{ secrets.SSH_PORT }}
-          source: build/libs/lawngarden.jar
+          source: build/libs/lawngarden-${{ github.sha }}.jar
           target: /home/lawn
           overwrite: true
 
@@ -90,12 +93,12 @@ jobs:
               . /home/lawn/.env
               set +a
             fi
-            find /home/lawn -maxdepth 1 -type f -name '*.jar' ! -name 'lawngarden.jar' -delete || true
-            jar_path=/home/lawn/lawngarden.jar
+            jar_path=/home/lawn/lawngarden-${{ github.sha }}.jar
             if [ ! -f "$jar_path" ]; then
               echo "missing jar: $jar_path"
               ls -l /home/lawn/*.jar || true
               exit 1
             fi
+            sha256sum "$jar_path"
             nohup java -jar "$jar_path" --spring.config.additional-location=file:/home/lawn/ > /home/lawn/lawngarden.log 2>&1 &
             echo $! > /home/lawn/lawngarden.pid
