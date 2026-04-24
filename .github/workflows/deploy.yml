@@ -75,6 +75,5 @@ jobs:
               rm -f /home/lawn/lawngarden.pid
             fi
             jar_path=$(ls /home/lawn/*.jar | head -n 1)
-            cp "$jar_path" /home/lawn/lawngarden.jar
-            nohup java -jar /home/lawn/lawngarden.jar > /home/lawn/lawngarden.log 2>&1 &
+            nohup java -jar "$jar_path" > /home/lawn/lawngarden.log 2>&1 &
             echo $! > /home/lawn/lawngarden.pid
