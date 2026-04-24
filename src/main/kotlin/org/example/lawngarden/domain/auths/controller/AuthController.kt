@@ -1,5 +1,7 @@
 package org.example.lawngarden.domain.auths.controller
 
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.example.lawngarden.domain.auths.details.UserDetailsImpl
 import org.example.lawngarden.domain.auths.dto.LoginRequest
 import org.example.lawngarden.domain.auths.dto.LoginResponse
@@ -20,11 +22,13 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/v1/auth")
+@Tag(name = "Auth", description = "인증 API")
 class AuthController(
     private val tokenProvider: TokenProvider,
     private val authenticationManager: AuthenticationManager,
 ) {
     @PostMapping("/login")
+    @Operation(summary = "로그인")
     fun login(@RequestBody loginRequest : LoginRequest): ResponseEntity<LoginResponse> {
         val prefix : String = "Bearer "
 
@@ -41,6 +45,7 @@ class AuthController(
 
 
     @PostMapping("/logout")
+    @Operation(summary = "로그아웃")
     fun logout(@AuthenticationPrincipal userDetailsImpl: UserDetailsImpl,
                @RequestHeader("Authorization") token : String): ResponseEntity<Void> {
         val user: User = userDetailsImpl.user

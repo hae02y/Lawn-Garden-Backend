@@ -1,5 +1,7 @@
 package org.example.lawngarden.domain.push.controller
 
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.example.lawngarden.domain.auths.details.UserDetailsImpl
 import org.example.lawngarden.domain.push.enums.MailStatus
 import org.example.lawngarden.domain.push.service.MailService
@@ -13,11 +15,13 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/v1/mails")
+@Tag(name = "Mails", description = "메일 상태 API")
 class MailController(
     private val mailService: MailService,
 ) {
 
     @PostMapping()
+    @Operation(summary = "메일 상태 변경")
     fun changeMailStatus(@RequestBody mailStatus: MailStatus,
                          @AuthenticationPrincipal userDetails: UserDetailsImpl,
                          ) {
