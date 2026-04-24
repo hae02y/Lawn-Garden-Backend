@@ -1,5 +1,7 @@
 package org.example.lawngarden.domain.stats.controller
 
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.example.lawngarden.domain.stats.service.StatsService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -8,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/v1/stats")
+@Tag(name = "Stats", description = "통계 API")
 class StatsController(
     private val statsService : StatsService,
 ) {
@@ -15,8 +18,16 @@ class StatsController(
 
 
     @GetMapping("/weekly")
+    @Operation(summary = "주간 통계 조회")
     fun getWeeklyStats() : ResponseEntity<Any> {
         val weeklyStats = statsService.getWeeklyStats()
         return ResponseEntity.ok(weeklyStats)
+    }
+
+    @GetMapping("/today")
+    @Operation(summary = "오늘 통계 조회")
+    fun getTodayStats(): ResponseEntity<Any> {
+        val todayStats = statsService.getTodayStats()
+        return ResponseEntity.ok(todayStats)
     }
 }

@@ -27,12 +27,21 @@ class PostService(
 ) {
 
     fun findAllPost(pageData: Pageable, keyword: String?): Page<PostResponseDto> {
-
         val findAll: Page<Post> =
             if (keyword.isNullOrBlank()) postRepository.findAllByOrderByCreatedDateDescIdDesc(pageData)
-             else postRepository.findAllByUserUsernameContainingOrderByCreatedDateDescIdDesc(keyword, pageData)
+            else postRepository.searchByKeyword(keyword, pageData)
 
-        return findAll.map { x -> x?.toPostResponseDto() }
+        return findAll.map { it.toPostResponseDto() }
+    }
+
+    fun findMyPosts(pageData: Pageable, user: User): Page<PostResponseDto> {
+        return postRepository.findAllByUserOrderByCreatedDateDescIdDesc(user, pageData)
+            .map { it.toPostResponseDto() }
+    }
+
+    fun findTodayPosts(pageData: Pageable): Page<PostResponseDto> {
+        return postRepository.findAllByCreatedDateOrderByCreatedDateDescIdDesc(LocalDate.now(), pageData)
+            .map { it.toPostResponseDto() }
     }
 
     fun findPostDetail(postId: Long): PostDetailResponseDto {

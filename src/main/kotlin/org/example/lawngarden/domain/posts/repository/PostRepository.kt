@@ -14,7 +14,19 @@ import java.time.LocalDate
 interface PostRepository : JpaRepository<Post, Long> {
     fun findByCreatedDate(date: LocalDate): List<Post>
     fun findAllByOrderByCreatedDateDescIdDesc(pageable: Pageable): Page<Post>
-    fun findAllByUserUsernameContainingOrderByCreatedDateDescIdDesc(keyword: String, pageable: Pageable): Page<Post>
+    fun findAllByUserOrderByCreatedDateDescIdDesc(user: User, pageable: Pageable): Page<Post>
+    fun findAllByCreatedDateOrderByCreatedDateDescIdDesc(createdDate: LocalDate, pageable: Pageable): Page<Post>
+    @Query(
+        """
+        SELECT p
+        FROM Post p
+        WHERE LOWER(COALESCE(p.user.username, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
+           OR LOWER(COALESCE(p.contents, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
+           OR LOWER(COALESCE(p.link, '')) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        ORDER BY p.createdDate DESC, p.id DESC
+        """
+    )
+    fun searchByKeyword(@Param("keyword") keyword: String, pageable: Pageable): Page<Post>
     fun existsPostByUserAndCreatedDate(user: User, date: LocalDate?): Boolean
     fun findPostById(id: Long): Post?
 
@@ -25,4 +37,3 @@ interface PostRepository : JpaRepository<Post, Long> {
         @Param("end") end: LocalDate
     ): List<Tuple>
 }
-

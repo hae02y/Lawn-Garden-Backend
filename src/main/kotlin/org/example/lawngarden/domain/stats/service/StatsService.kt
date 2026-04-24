@@ -29,4 +29,10 @@ class StatsService(
         val toList : List<UserStatsResponseDto> = pairs.stream().map { x -> x.first.toUserStatsResponseDto(x.second) }.toList()
         return toList;
     }
+
+    fun getTodayStats(): List<UserStatsResponseDto> {
+        val postList: List<Tuple> = postRepository.findAllByCreatedDateBetween(LocalDate.now(), LocalDate.now())
+        val pairs = postList.map { tuple -> tuple["user"] as User to tuple["postCount"] as Long }
+        return pairs.map { it.first.toUserStatsResponseDto(it.second) }
+    }
 }
