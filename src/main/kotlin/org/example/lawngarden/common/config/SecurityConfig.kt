@@ -7,6 +7,7 @@ import org.example.lawngarden.domain.auths.token.TokenProvider
 import org.example.lawngarden.domain.users.entity.User
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
@@ -21,6 +22,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
+import org.springframework.web.util.UriComponentsBuilder
+import java.net.URI
 
 @Configuration
 @EnableWebSecurity
@@ -28,6 +31,8 @@ class SecurityConfig(
     private val customOauth2UserService: CustomOauth2UserService,
     private val jwtAuthenticationFilter: JwtAuthenticationFilter,
     private val tokenProvider: TokenProvider,
+    @Value("\${app.front-callback}")
+    private val frontCallback: String,
 ) {
 
     @Bean
@@ -69,11 +74,18 @@ class SecurityConfig(
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val config = CorsConfiguration()
-        config.allowedOrigins = listOf(
+        val frontOrigin = runCatching {
+            val uri = URI(frontCallback)
+            "${uri.scheme}://${uri.authority}"
+        }.getOrNull()
+
+        config.allowedOrigins = listOfNotNull(
+            frontOrigin,
             "http://localhost:3000",
             "http://localhost:5173",
-            "https://lawngarden.netlify.app"
-        )
+            "https://lawngarden.netlify.app",
+            "https://my-lawn.netlify.app",
+        ).distinct()
         config.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
         config.allowedHeaders = listOf("*")
         config.allowCredentials = false
@@ -93,11 +105,14 @@ class SecurityConfig(
             val username = user.username
             val userId = user.id
 
-            val redirectUrl = "http://localhost:5173/oauth/github" +
-                "?accessToken=$accessToken" +
-                "&refreshToken=$refreshToken" +
-                "&username=$username" +
-                "&userId=$userId"
+            val redirectUrl = UriComponentsBuilder.fromUriString(frontCallback)
+                .queryParam("accessToken", accessToken)
+                .queryParam("refreshToken", refreshToken)
+                .queryParam("username", username)
+                .queryParam("userId", userId)
+                .build()
+                .encode()
+                .toUriString()
             response.sendRedirect(redirectUrl)
         }
     }
