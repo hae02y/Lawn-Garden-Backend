@@ -23,10 +23,6 @@ class GeekNewsService(
     private val seoulZone: ZoneId = ZoneId.of("Asia/Seoul")
 
     fun getGeekNews(pageable: Pageable, keyword: String?): Page<GeekNewsResponseDto> {
-        if (geekNewsArticleRepository.count() == 0L) {
-            syncGeekNews(50)
-        }
-
         val page = if (keyword.isNullOrBlank()) {
             geekNewsArticleRepository.findAllByOrderByPublishedAtDescIdDesc(pageable)
         } else {
