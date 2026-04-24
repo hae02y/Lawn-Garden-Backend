@@ -20,6 +20,10 @@ class GeekNewsService(
     private val rssUrl = "https://news.hada.io/rss/news"
 
     fun getGeekNews(pageable: Pageable, keyword: String?): Page<GeekNewsResponseDto> {
+        if (geekNewsArticleRepository.count() == 0L) {
+            syncGeekNews(50)
+        }
+
         val page = if (keyword.isNullOrBlank()) {
             geekNewsArticleRepository.findAllByOrderByPublishedAtDescIdDesc(pageable)
         } else {
