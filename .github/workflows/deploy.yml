@@ -61,6 +61,17 @@ jobs:
           target: /home/lawn
           overwrite: true
 
+      - name: Upload application configs
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: ${{ secrets.SSH_PORT }}
+          source: src/main/resources/application*.yml
+          target: /home/lawn
+          overwrite: true
+
       - name: Deploy on server
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -75,5 +86,5 @@ jobs:
               rm -f /home/lawn/lawngarden.pid
             fi
             jar_path=$(ls /home/lawn/*.jar | head -n 1)
-            nohup java -jar "$jar_path" > /home/lawn/lawngarden.log 2>&1 &
+            nohup java -jar "$jar_path" --spring.config.additional-location=file:/home/lawn/ > /home/lawn/lawngarden.log 2>&1 &
             echo $! > /home/lawn/lawngarden.pid

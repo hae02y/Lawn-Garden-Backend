@@ -2,7 +2,7 @@ server:
   port: 8080
 spring:
   config:
-    import: optional:file:.env[.properties]
+    import: optional:file:/home/lawn/.env[.properties]
   data:
     mongodb:
       uri: ${MONGODB_URL}
