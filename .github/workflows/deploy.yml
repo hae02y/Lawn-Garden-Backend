@@ -67,5 +67,9 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             set -e
-            pkill -f '/home/lawn/lawngarden.jar' || true
+            if [ -f /home/lawn/lawngarden.pid ]; then
+              kill "$(cat /home/lawn/lawngarden.pid)" || true
+              rm -f /home/lawn/lawngarden.pid
+            fi
             nohup java -jar /home/lawn/lawngarden.jar > /home/lawn/lawngarden.log 2>&1 &
+            echo $! > /home/lawn/lawngarden.pid
