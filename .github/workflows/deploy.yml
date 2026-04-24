@@ -62,6 +62,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           source: build/libs/lawngarden-${{ github.sha }}.jar
           target: /home/lawn
+          strip_components: 2
           overwrite: true
 
       - name: Upload application configs
@@ -73,6 +74,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           source: src/main/resources/application*.yml
           target: /home/lawn
+          strip_components: 3
           overwrite: true
 
       - name: Deploy on server
