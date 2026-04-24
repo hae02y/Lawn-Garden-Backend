@@ -47,6 +47,9 @@ jobs:
       - name: Build JAR
         run: gradle clean bootJar -x test
 
+      - name: Verify build artifact
+        run: ls -l build/libs
+
       - name: Upload JAR to server staging dir
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -54,7 +57,7 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
           port: ${{ secrets.SSH_PORT }}
-          source: build/libs/lawngarden.jar
+          source: build/libs/*.jar
           target: /home/lawn
           overwrite: true
 
@@ -71,5 +74,7 @@ jobs:
               kill "$(cat /home/lawn/lawngarden.pid)" || true
               rm -f /home/lawn/lawngarden.pid
             fi
+            jar_path=$(ls /home/lawn/*.jar | head -n 1)
+            cp "$jar_path" /home/lawn/lawngarden.jar
             nohup java -jar /home/lawn/lawngarden.jar > /home/lawn/lawngarden.log 2>&1 &
             echo $! > /home/lawn/lawngarden.pid
