@@ -8,6 +8,7 @@ import org.example.lawngarden.domain.users.entity.User
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
@@ -41,6 +42,7 @@ class SecurityConfig(
             .csrf { it.disable() }
             .cors { it.configurationSource(corsConfigurationSource()) }
             .authorizeHttpRequests {
+                it.requestMatchers(HttpMethod.GET, "/api/v1/geeknews/**").permitAll()
                 it.requestMatchers(
                     "/",
                     "/api/v1/users/register",
