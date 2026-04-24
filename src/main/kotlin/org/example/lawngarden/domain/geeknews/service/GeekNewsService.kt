@@ -10,6 +10,7 @@ import org.w3c.dom.Element
 import java.net.URL
 import java.time.Instant
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -19,10 +20,14 @@ import javax.xml.parsers.DocumentBuilderFactory
 class GeekNewsService(
     private val geekNewsArticleRepository: GeekNewsArticleRepository,
 ) {
-    private val rssUrl = "https://news.hada.io/rss/news"
+    private val rssUrl = "https://feeds.feedburner.com/geeknews-feed"
     private val seoulZone: ZoneId = ZoneId.of("Asia/Seoul")
 
     fun getGeekNews(pageable: Pageable, keyword: String?): Page<GeekNewsResponseDto> {
+        if (geekNewsArticleRepository.count() == 0L) {
+            runCatching { syncGeekNews(50) }
+        }
+
         val page = if (keyword.isNullOrBlank()) {
             geekNewsArticleRepository.findAllByOrderByPublishedAtDescIdDesc(pageable)
         } else {
@@ -73,16 +78,29 @@ class GeekNewsService(
 
         URL(rssUrl).openStream().use { input ->
             val document = builder.parse(input)
-            val nodeList = document.getElementsByTagName("item")
+            val rssItems = document.getElementsByTagName("item")
+            if (rssItems.length > 0) {
+                return (0 until rssItems.length).mapNotNull { index ->
+                    val element = rssItems.item(index) as? Element ?: return@mapNotNull null
+                    RssItem(
+                        title = elementText(element, "title") ?: "",
+                        link = elementText(element, "link") ?: "",
+                        description = elementText(element, "description"),
+                        guid = elementText(element, "guid"),
+                        pubDate = elementText(element, "pubDate"),
+                    )
+                }
+            }
 
-            return (0 until nodeList.length).mapNotNull { index ->
-                val element = nodeList.item(index) as? Element ?: return@mapNotNull null
+            val atomEntries = document.getElementsByTagName("entry")
+            return (0 until atomEntries.length).mapNotNull { index ->
+                val element = atomEntries.item(index) as? Element ?: return@mapNotNull null
                 RssItem(
                     title = elementText(element, "title") ?: "",
-                    link = elementText(element, "link") ?: "",
-                    description = elementText(element, "description"),
-                    guid = elementText(element, "guid"),
-                    pubDate = elementText(element, "pubDate"),
+                    link = atomLink(element) ?: "",
+                    description = elementText(element, "summary") ?: elementText(element, "content"),
+                    guid = elementText(element, "id"),
+                    pubDate = elementText(element, "published") ?: elementText(element, "updated"),
                 )
             }
         }
@@ -92,6 +110,10 @@ class GeekNewsService(
         if (pubDate.isNullOrBlank()) return null
         return runCatching {
             ZonedDateTime.parse(pubDate, DateTimeFormatter.RFC_1123_DATE_TIME).toInstant()
+        }.recoverCatching {
+            OffsetDateTime.parse(pubDate).toInstant()
+        }.recoverCatching {
+            Instant.parse(pubDate)
         }.getOrNull()
     }
 
@@ -117,6 +139,24 @@ class GeekNewsService(
         val list = element.getElementsByTagName(tagName)
         if (list.length == 0) return null
         return list.item(0)?.textContent?.trim()
+    }
+
+    private fun atomLink(element: Element): String? {
+        val links = element.getElementsByTagName("link")
+        if (links.length == 0) return null
+
+        val preferred = (0 until links.length)
+            .mapNotNull { idx -> links.item(idx) as? Element }
+            .firstOrNull { (it.getAttribute("rel") ?: "").ifBlank { "alternate" } == "alternate" }
+
+        val target = preferred ?: (links.item(0) as? Element)
+        val href = target?.getAttribute("href")?.trim()
+
+        return if (href.isNullOrBlank()) {
+            target?.textContent?.trim()?.takeIf { it.isNotBlank() }
+        } else {
+            href
+        }
     }
 
     private data class RssItem(
