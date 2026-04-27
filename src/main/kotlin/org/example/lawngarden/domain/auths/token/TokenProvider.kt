@@ -2,7 +2,6 @@ package org.example.lawngarden.domain.auths.token
 
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
 import org.example.lawngarden.common.properties.JwtProperties
 import org.example.lawngarden.domain.users.entity.User

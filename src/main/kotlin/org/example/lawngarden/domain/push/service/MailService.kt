@@ -24,9 +24,21 @@ class MailService(
     }
 
     @Transactional
-    fun changeMailStatus(status: MailStatus, user: User) {
-        val findByUser = mailRepository.findByUser(user)
-        findByUser?.changeStatus(status)
+    fun changeMailStatus(status: MailStatus, user: User): MailStatus {
+        val findByUser = mailRepository.findByUser(user) ?: mailRepository.save(
+            Mail(
+                user = user,
+                status = status,
+            )
+        )
+        findByUser.changeStatus(status)
+        return findByUser.status
+    }
+
+    @Transactional
+    fun getMailStatus(user: User): MailStatus {
+        val findByUser = mailRepository.findByUser(user) ?: createMail(user)
+        return findByUser.status
     }
 
     //메일등록

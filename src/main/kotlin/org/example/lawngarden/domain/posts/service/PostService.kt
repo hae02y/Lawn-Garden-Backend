@@ -14,9 +14,10 @@ import org.example.lawngarden.domain.users.entity.User
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.nio.file.AccessDeniedException
+import org.springframework.web.multipart.MultipartFile
 import java.time.LocalDate
 import java.util.NoSuchElementException
 
@@ -25,6 +26,9 @@ class PostService(
     private val postRepository: PostRepository,
     private val imageService: ImageService,
 ) {
+    companion object {
+        private const val MAX_IMAGE_SIZE_BYTES = 3 * 1024 * 1024L
+    }
 
     fun findAllPost(pageData: Pageable, keyword: String?): Page<PostResponseDto> {
         val findAll: Page<Post> =
@@ -45,21 +49,21 @@ class PostService(
     }
 
     fun findPostDetail(postId: Long): PostDetailResponseDto {
-        val findById: Post = postRepository.findByIdOrNull(postId) ?: throw RuntimeException("post가 없습니다.")
+        val findById: Post = postRepository.findByIdOrNull(postId)
+            ?: throw NoSuchElementException("해당 ID의 게시글이 존재하지 않습니다. id=$postId")
         val postDetailResponseDto: PostDetailResponseDto = findById.toPostDetailResponseDto()
         return postDetailResponseDto
     }
 
     @Transactional
     fun savePost(post: PostRequestDto, user: User): Post {
-
-        val maxSize = 3 * 1024 * 1024
-
-        if (post.link == null || post.imageFile!!.isEmpty) throw IllegalArgumentException("이미지는 필수입니다.")
-        if (postRepository.existsPostByUserAndCreatedDate(user, LocalDate.now())) throw RuntimeException("이미 등록된 Post가 있습니다.")
-        if (!post.imageFile!!.contentType!!.startsWith("image/")) throw IllegalArgumentException("이미지형식만 업로드할 수 있습니다.")
-        if (post.imageFile!!.size > maxSize) throw IllegalArgumentException("파일 용량이 너무 큽니다.(최대 3MB)")
-        val imageName = imageService.upload(post.imageFile!!)
+        val imageFile = post.imageFile ?: throw IllegalArgumentException("이미지는 필수입니다.")
+        if (imageFile.isEmpty) throw IllegalArgumentException("이미지는 필수입니다.")
+        if (postRepository.existsPostByUserAndCreatedDate(user, LocalDate.now())) {
+            throw IllegalArgumentException("이미 등록된 Post가 있습니다.")
+        }
+        validateImageFile(imageFile)
+        val imageName = imageService.upload(imageFile)
 
         return postRepository.save(post.toPost(user, imageName))
     }
@@ -67,10 +71,15 @@ class PostService(
     @Transactional
     fun updatePost(post: PostRequestDto, postId: Long, user: User): Post {
         val findPostById = postRepository.findPostById(postId) ?: throw NoSuchElementException("해당 ID의 게시글이 존재하지 않습니다. id=$postId")
-        if (findPostById.user.id != user.id)  throw AccessDeniedException("유저가 없습니다.")
+        if (findPostById.user.id != user.id) throw AccessDeniedException("게시글 수정 권한이 없습니다.")
 
-        val imageName = if(post.imageFile != null) imageService.upload(post.imageFile!!)
-                        else findPostById.image
+        val newImageFile = post.imageFile
+        val imageName = if (newImageFile != null && !newImageFile.isEmpty) {
+            validateImageFile(newImageFile)
+            imageService.upload(newImageFile)
+        } else {
+            findPostById.image
+        }
 
         return postRepository.save(findPostById.updatePost(post, imageName))
     }
@@ -80,8 +89,17 @@ class PostService(
             postRepository.findPostById(postId) ?: throw NoSuchElementException("해당 ID의 게시글이 존재하지 않습니다. id=$postId")
 
         if (findById.user.id != user.id) {
-            throw AccessDeniedException("유저가 일치하지 않습니다.")
+            throw AccessDeniedException("게시글 삭제 권한이 없습니다.")
         }
         postRepository.delete(findById)
+    }
+
+    private fun validateImageFile(imageFile: MultipartFile) {
+        if (!imageFile.contentType.orEmpty().startsWith("image/")) {
+            throw IllegalArgumentException("이미지형식만 업로드할 수 있습니다.")
+        }
+        if (imageFile.size > MAX_IMAGE_SIZE_BYTES) {
+            throw IllegalArgumentException("파일 용량이 너무 큽니다.(최대 3MB)")
+        }
     }
 }

@@ -13,8 +13,8 @@ class CustomOAuth2User(
 
     override fun getAttributes(): Map<String, Any> = attributes
 
-    override fun getAuthorities(): Collection<GrantedAuthority?>? =
-        mutableListOf(SimpleGrantedAuthority("ROLE_USER"))
+    override fun getAuthorities(): Collection<GrantedAuthority> =
+        listOf(SimpleGrantedAuthority("ROLE_USER"))
 
     override fun getName(): String = user.id.toString()
 }

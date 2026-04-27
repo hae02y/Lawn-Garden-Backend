@@ -13,6 +13,7 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import java.time.LocalDate
+import java.util.NoSuchElementException
 
 @Service
 class UserService(
@@ -32,7 +33,8 @@ class UserService(
     }
 
     fun findUser(userId: Long): UserDetailResponseDto {
-        val user: User = userRepository.findByIdOrNull(userId) ?: throw RuntimeException("User with ID $userId not found");
+        val user: User = userRepository.findByIdOrNull(userId)
+            ?: throw NoSuchElementException("User with ID $userId not found")
         return user.toUserDetailResponseDto()
     }
 
@@ -53,18 +55,16 @@ class UserService(
 
     fun verifyEmail(email: String) {
         val isExist : Boolean = userRepository.existsUserByEmail(email)
-        if(isExist){
+        if (isExist) {
             throw EmailExistException()
         }
-        else return
     }
 
     fun verifyUserName(userName : String){
         val existsByUsername :Boolean  = userRepository.existsByUsername(userName)
-        if(existsByUsername){
+        if (existsByUsername) {
             throw UserExistException()
         }
-        else return
     }
 
 }

@@ -11,7 +11,6 @@ import org.example.lawngarden.domain.posts.service.PostService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
-import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -72,7 +71,7 @@ class PostController(
     fun postPost(
         @AuthenticationPrincipal userDetailsImpl: UserDetailsImpl,
         @ModelAttribute postRequestDto: PostRequestDto,
-    ) :ResponseEntity<Any?> {
+    ) : ResponseEntity<Void> {
         val user = userDetailsImpl.user
         val savePost = postService.savePost(postRequestDto, user)
 
@@ -103,7 +102,7 @@ class PostController(
     fun deletePost(
         @PathVariable postId: Long,
         @AuthenticationPrincipal userDetailsImpl: UserDetailsImpl,
-    ): ResponseEntity<PostDetailResponseDto> {
+    ): ResponseEntity<Void> {
         val user = userDetailsImpl.user
         postService.deletePost(postId, user)
         return ResponseEntity.noContent().build()

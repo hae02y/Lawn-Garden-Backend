@@ -9,6 +9,5 @@ import org.springframework.stereotype.Repository
 @Repository
 interface MailRepository : JpaRepository<Mail, Long> {
     fun findByUser(user : User): Mail?
-    fun id(id: Long): MutableList<Mail>
     fun findAllByStatus(status: MailStatus): List<Mail>
 }

@@ -47,14 +47,12 @@ class SecurityConfig(
                     "/",
                     "/api/v1/users/register",
                     "/api/v1/auth/login",
-                    "/api/v1/auth/logout",
-                    "/api/v1/oauth/**",
+                    "/api/v1/auth/refresh",
                     "/api/v1/oauth2/**",
                     "/oauth2/authorization/**",
                     "/login/oauth2/code/**",
                     "/swagger-ui/**",
                     "/v3/api-docs/**",
-                    "/api/v1/mails/**",
                 ).permitAll()
                 it.anyRequest().authenticated()
             }

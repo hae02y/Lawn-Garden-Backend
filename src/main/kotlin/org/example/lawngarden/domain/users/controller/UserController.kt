@@ -2,10 +2,13 @@ package org.example.lawngarden.domain.users.controller
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.example.lawngarden.domain.auths.details.UserDetailsImpl
+import org.example.lawngarden.domain.mapper.toUserDetailResponseDto
 import org.example.lawngarden.domain.users.dto.RegisterRequestDto
 import org.example.lawngarden.domain.users.dto.UserDetailResponseDto
 import org.example.lawngarden.domain.users.service.UserService
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -35,11 +38,19 @@ class UserController(
         return ResponseEntity.ok(findAllUser)
     }
 
-    @GetMapping("today")
+    @GetMapping("/me")
+    @Operation(summary = "내 정보 조회")
+    fun getMyUser(
+        @AuthenticationPrincipal userDetailsImpl: UserDetailsImpl,
+    ): ResponseEntity<UserDetailResponseDto> {
+        return ResponseEntity.ok(userDetailsImpl.user.toUserDetailResponseDto())
+    }
+
+    @GetMapping("/today")
     @Operation(summary = "오늘 커밋 사용자 조회")
     fun getTodayUser(@RequestParam commit: String): ResponseEntity<List<UserDetailResponseDto>> {
         val findTodayCommitUser = userService.findTodayCommitUser(commit)
-        return ResponseEntity.ok(findTodayCommitUser);
+        return ResponseEntity.ok(findTodayCommitUser)
     }
 
 

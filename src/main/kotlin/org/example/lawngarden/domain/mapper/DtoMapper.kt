@@ -10,7 +10,6 @@ import org.example.lawngarden.domain.users.dto.UserDetailResponseDto
 import org.example.lawngarden.domain.users.dto.UserStatsResponseDto
 import org.example.lawngarden.domain.users.entity.User
 import java.time.LocalDate
-import java.util.*
 
 
 fun RegisterRequestDto.toUser(): User = User(
@@ -64,12 +63,9 @@ fun PostRequestDto.toPost(user: User, imageName: String?): Post {
 }
 
 fun Post.updatePost(postRequestDto: PostRequestDto, imageName: String?) : Post {
-    return Post(
-        id = this.id,
-        user = this.user,
-        link = postRequestDto.link,
-        contents = postRequestDto.contents,
-        image = imageName,
-    )
+    this.link = postRequestDto.link
+    this.contents = postRequestDto.contents
+    this.image = imageName
+    this.updateDate = LocalDate.now()
+    return this
 }
-

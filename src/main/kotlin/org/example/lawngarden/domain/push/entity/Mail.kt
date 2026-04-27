@@ -21,8 +21,8 @@ class Mail(
     val id: Long? = null,
 
     @OneToOne
-    @JoinColumn(name = "user_id")
-    var user: User? = null,
+    @JoinColumn(name = "user_id", unique = true, nullable = false)
+    var user: User,
 
     @Enumerated(EnumType.STRING)
     var status: MailStatus = MailStatus.ON,

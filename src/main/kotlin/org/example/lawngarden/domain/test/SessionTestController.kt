@@ -2,10 +2,12 @@ package org.example.lawngarden.domain.test
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpSession
+import org.springframework.context.annotation.Profile
 import org.springframework.web.bind.annotation.*
 
 
 @RestController
+@Profile("local")
 @RequestMapping("/s")
 class SessionTestController() {
 

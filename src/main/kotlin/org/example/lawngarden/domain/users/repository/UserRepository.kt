@@ -6,14 +6,13 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import java.time.LocalDate
-import java.util.*
 
 @Repository
-interface UserRepository : JpaRepository<User, Long?> {
-    fun findByUsername(username: String?): Optional<User?>?
-    fun existsByUsername(username: String?): Boolean
-    fun existsUserByEmail(email: String?): Boolean
-    fun findByEmail(email: String?): User?
+interface UserRepository : JpaRepository<User, Long> {
+    fun findByUsername(username: String): User?
+    fun existsByUsername(username: String): Boolean
+    fun existsUserByEmail(email: String): Boolean
+    fun findByEmail(email: String): User?
     override fun findAll() : List<User>
 
     fun findAllByPostCreatedDate(createdDate: LocalDate): List<User>
@@ -27,4 +26,3 @@ interface UserRepository : JpaRepository<User, Long?> {
 """)
     fun findUsersWithoutPostToday(@Param("today") today: LocalDate): List<User>
 }
-
