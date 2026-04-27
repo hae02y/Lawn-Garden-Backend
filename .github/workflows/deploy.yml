@@ -8,7 +8,7 @@ on:
 
 concurrency:
   group: backend-deploy-main
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -91,7 +91,10 @@ jobs:
           script: |
             set -euo pipefail
             if [ -f /home/lawn/lawngarden.pid ]; then
-              kill "$(cat /home/lawn/lawngarden.pid)" || true
+              old_pid="$(cat /home/lawn/lawngarden.pid || true)"
+              if [ -n "$old_pid" ] && kill -0 "$old_pid" 2>/dev/null; then
+                kill "$old_pid" || true
+              fi
               rm -f /home/lawn/lawngarden.pid
             fi
             pkill -f '/home/lawn/lawngarden-.*\.jar' || true
