@@ -1,5 +1,7 @@
 package org.example.lawngarden.domain.geeknews.service
 
+import org.jsoup.Jsoup
+import org.jsoup.parser.Parser
 import org.example.lawngarden.domain.geeknews.dto.GeekNewsResponseDto
 import org.example.lawngarden.domain.geeknews.entity.GeekNewsArticle
 import org.example.lawngarden.domain.geeknews.repository.GeekNewsArticleRepository
@@ -9,7 +11,6 @@ import org.springframework.stereotype.Service
 import org.w3c.dom.Element
 import java.net.URL
 import java.time.Instant
-import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -38,9 +39,9 @@ class GeekNewsService(
             GeekNewsResponseDto(
                 id = it.id,
                 sourceId = it.sourceId,
-                title = it.title,
+                title = sanitizeText(it.title) ?: it.title,
                 link = it.link,
-                summary = it.summary,
+                summary = sanitizeText(it.summary),
                 publishedAt = it.publishedAt,
             )
         }
@@ -118,21 +119,35 @@ class GeekNewsService(
     }
 
     private fun saveIfNew(item: RssItem, publishedInstant: Instant?): Boolean {
-        val sourceId = item.guid?.takeIf { it.isNotBlank() } ?: item.link
-        if (sourceId.isBlank() || item.title.isBlank() || item.link.isBlank()) return false
+        val cleanLink = item.link.trim()
+        val cleanTitle = sanitizeText(item.title) ?: return false
+        val cleanSummary = sanitizeText(item.description)
+        val sourceId = item.guid?.trim()?.takeIf { it.isNotBlank() } ?: cleanLink
+
+        if (sourceId.isBlank() || cleanLink.isBlank()) return false
         if (geekNewsArticleRepository.existsBySourceId(sourceId)) return false
 
         val publishedAt = publishedInstant?.atZone(seoulZone)?.toLocalDateTime()
         geekNewsArticleRepository.save(
             GeekNewsArticle(
                 sourceId = sourceId,
-                title = item.title,
-                link = item.link,
-                summary = item.description,
+                title = cleanTitle,
+                link = cleanLink,
+                summary = cleanSummary,
                 publishedAt = publishedAt,
             )
         )
         return true
+    }
+
+    private fun sanitizeText(raw: String?): String? {
+        if (raw.isNullOrBlank()) return null
+
+        val unescaped = Parser.unescapeEntities(raw, false)
+        val plainText = Jsoup.parse(unescaped).text()
+        val normalized = plainText.replace(Regex("\\s+"), " ").trim()
+
+        return normalized.takeIf { it.isNotBlank() }
     }
 
     private fun elementText(element: Element, tagName: String): String? {
