@@ -102,5 +102,13 @@ jobs:
               exit 1
             fi
             sha256sum "$jar_path"
+
+            for old_jar in /home/lawn/lawngarden-*.jar; do
+              if [ "$old_jar" != "$jar_path" ]; then
+                rm -f "$old_jar"
+              fi
+            done
+            rm -f /home/lawn/lawngarden.jar
+
             nohup java -jar "$jar_path" --spring.config.additional-location=file:/home/lawn/ > /home/lawn/lawngarden.log 2>&1 &
             echo $! > /home/lawn/lawngarden.pid
