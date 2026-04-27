@@ -117,26 +117,26 @@ jobs:
             ln -sfn "$JAR_RELEASE_PATH" "$JAR_LINK_PATH"
 
             cat > "$APP_HOME/$SERVICE_NAME.service" <<'EOF'
-[Unit]
-Description=Lawn Garden Backend Service
-After=network.target
+            [Unit]
+            Description=Lawn Garden Backend Service
+            After=network.target
 
-[Service]
-Type=simple
-User=lawn
-Group=lawn
-WorkingDirectory=/home/lawn
-EnvironmentFile=-/home/lawn/.env
-ExecStart=/usr/bin/java -jar /home/lawn/lawngarden-current.jar --spring.config.additional-location=file:/home/lawn/
-SuccessExitStatus=143
-Restart=always
-RestartSec=5
-StandardOutput=append:/home/lawn/lawngarden.log
-StandardError=append:/home/lawn/lawngarden.log
+            [Service]
+            Type=simple
+            User=lawn
+            Group=lawn
+            WorkingDirectory=/home/lawn
+            EnvironmentFile=-/home/lawn/.env
+            ExecStart=/usr/bin/java -jar /home/lawn/lawngarden-current.jar --spring.config.additional-location=file:/home/lawn/
+            SuccessExitStatus=143
+            Restart=always
+            RestartSec=5
+            StandardOutput=append:/home/lawn/lawngarden.log
+            StandardError=append:/home/lawn/lawngarden.log
 
-[Install]
-WantedBy=multi-user.target
-EOF
+            [Install]
+            WantedBy=multi-user.target
+            EOF
 
             SUDO=""
             if [ "$(id -u)" -eq 0 ]; then
