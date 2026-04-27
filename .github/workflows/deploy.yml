@@ -90,47 +90,73 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             set -euo pipefail
-            if pgrep -f '/home/lawn/lawngarden-.*\.jar' >/dev/null 2>&1; then
-              pkill -TERM -f '/home/lawn/lawngarden-.*\.jar' || true
-              sleep 3
-              pkill -KILL -f '/home/lawn/lawngarden-.*\.jar' || true
-            fi
-            rm -f /home/lawn/lawngarden.pid
 
-            if [ -f /home/lawn/.env ]; then
-              set -a
-              . /home/lawn/.env
-              set +a
-            fi
-            jar_path=/home/lawn/lawngarden-${{ github.sha }}.jar
-            if [ ! -f "$jar_path" ]; then
-              echo "missing jar: $jar_path"
-              ls -l /home/lawn/*.jar || true
+            APP_HOME=/home/lawn
+            SERVICE_NAME=lawngarden
+            JAR_RELEASE_PATH="$APP_HOME/lawngarden-${{ github.sha }}.jar"
+            JAR_LINK_PATH="$APP_HOME/lawngarden-current.jar"
+            SERVICE_PATH="/etc/systemd/system/$SERVICE_NAME.service"
+
+            if [ ! -f "$JAR_RELEASE_PATH" ]; then
+              echo "missing jar: $JAR_RELEASE_PATH"
+              ls -l "$APP_HOME"/*.jar || true
               exit 1
             fi
-            sha256sum "$jar_path"
+            sha256sum "$JAR_RELEASE_PATH"
 
-            previous_jar=""
-            for candidate in /home/lawn/lawngarden-*.jar; do
-              if [ "$candidate" = "$jar_path" ]; then
-                continue
-              fi
-              if [ -z "$previous_jar" ] || [ "$candidate" -nt "$previous_jar" ]; then
-                previous_jar="$candidate"
-              fi
-            done
+            if [ -f "$APP_HOME/.env" ]; then
+              set -a
+              . "$APP_HOME/.env"
+              set +a
+            fi
 
-            nohup java -jar "$jar_path" --spring.config.additional-location=file:/home/lawn/ > /home/lawn/lawngarden.log 2>&1 &
-            new_pid=$!
-            echo "$new_pid" > /home/lawn/lawngarden.pid
+            previous_target=""
+            if [ -L "$JAR_LINK_PATH" ]; then
+              previous_target="$(readlink -f "$JAR_LINK_PATH" || true)"
+            fi
+            ln -sfn "$JAR_RELEASE_PATH" "$JAR_LINK_PATH"
+
+            cat > "$APP_HOME/$SERVICE_NAME.service" <<'EOF'
+[Unit]
+Description=Lawn Garden Backend Service
+After=network.target
+
+[Service]
+Type=simple
+User=lawn
+Group=lawn
+WorkingDirectory=/home/lawn
+EnvironmentFile=-/home/lawn/.env
+ExecStart=/usr/bin/java -jar /home/lawn/lawngarden-current.jar --spring.config.additional-location=file:/home/lawn/
+SuccessExitStatus=143
+Restart=always
+RestartSec=5
+StandardOutput=append:/home/lawn/lawngarden.log
+StandardError=append:/home/lawn/lawngarden.log
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+            SUDO=""
+            if [ "$(id -u)" -eq 0 ]; then
+              SUDO=""
+            elif command -v sudo >/dev/null 2>&1 && sudo -n true >/dev/null 2>&1; then
+              SUDO="sudo -n"
+            else
+              echo "this deploy requires root or passwordless sudo to manage systemctl"
+              exit 1
+            fi
+
+            $SUDO mv "$APP_HOME/$SERVICE_NAME.service" "$SERVICE_PATH"
+            $SUDO chown root:root "$SERVICE_PATH"
+            $SUDO chmod 644 "$SERVICE_PATH"
+            $SUDO systemctl daemon-reload
+            $SUDO systemctl enable "$SERVICE_NAME"
+            $SUDO systemctl restart "$SERVICE_NAME"
 
             startup_ok=false
             for i in $(seq 1 30); do
-              if ! kill -0 "$new_pid" 2>/dev/null; then
-                echo "application process exited early"
-                break
-              fi
-
               if curl -fsS "http://127.0.0.1:8080/v3/api-docs" >/dev/null 2>&1; then
                 startup_ok=true
                 break
@@ -141,15 +167,13 @@ jobs:
 
             if [ "$startup_ok" != "true" ]; then
               echo "application startup verification failed"
-              tail -n 200 /home/lawn/lawngarden.log || true
+              $SUDO systemctl status "$SERVICE_NAME" --no-pager || true
+              tail -n 200 "$APP_HOME/lawngarden.log" || true
 
-              if [ -n "$previous_jar" ] && [ -f "$previous_jar" ]; then
-                echo "rolling back to previous jar: $previous_jar"
-                nohup java -jar "$previous_jar" --spring.config.additional-location=file:/home/lawn/ > /home/lawn/lawngarden.log 2>&1 &
-                rollback_pid=$!
-                echo "$rollback_pid" > /home/lawn/lawngarden.pid
-              else
-                echo "no rollback jar available"
+              if [ -n "$previous_target" ] && [ -f "$previous_target" ]; then
+                echo "rolling back to previous jar: $previous_target"
+                ln -sfn "$previous_target" "$JAR_LINK_PATH"
+                $SUDO systemctl restart "$SERVICE_NAME" || true
               fi
 
               exit 1
@@ -157,9 +181,10 @@ jobs:
 
             echo "application startup verified"
 
-            for old_jar in /home/lawn/lawngarden-*.jar; do
-              if [ "$old_jar" != "$jar_path" ]; then
+            for old_jar in "$APP_HOME"/lawngarden-*.jar; do
+              [ -e "$old_jar" ] || continue
+              if [ "$old_jar" != "$JAR_RELEASE_PATH" ] && [ "$old_jar" != "$previous_target" ]; then
                 rm -f "$old_jar"
               fi
             done
-            rm -f /home/lawn/lawngarden.jar
+            rm -f "$APP_HOME/lawngarden.jar"
