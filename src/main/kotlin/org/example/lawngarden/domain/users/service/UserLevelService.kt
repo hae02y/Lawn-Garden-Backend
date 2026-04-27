@@ -36,8 +36,9 @@ class UserLevelService(
     }
 
     @EventListener(ApplicationReadyEvent::class)
+    @Transactional
     fun syncLevelOnStartup() {
-        val updatedRows = syncAllUserLevels()
+        val updatedRows = userRepository.syncLevelByPostCount()
         logger.info("User level sync completed on startup. updatedRows={}", updatedRows)
     }
 }
