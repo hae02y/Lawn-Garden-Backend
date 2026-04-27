@@ -11,6 +11,7 @@ import org.example.lawngarden.domain.posts.dto.PostResponseDto
 import org.example.lawngarden.domain.posts.entity.Post
 import org.example.lawngarden.domain.posts.repository.PostRepository
 import org.example.lawngarden.domain.users.entity.User
+import org.example.lawngarden.domain.users.service.UserLevelService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -25,6 +26,7 @@ import java.util.NoSuchElementException
 class PostService(
     private val postRepository: PostRepository,
     private val imageService: ImageService,
+    private val userLevelService: UserLevelService,
 ) {
     companion object {
         private const val MAX_IMAGE_SIZE_BYTES = 3 * 1024 * 1024L
@@ -65,7 +67,9 @@ class PostService(
         validateImageFile(imageFile)
         val imageName = imageService.upload(imageFile)
 
-        return postRepository.save(post.toPost(user, imageName))
+        val savedPost = postRepository.save(post.toPost(user, imageName))
+        userLevelService.syncUserLevel(user.id)
+        return savedPost
     }
 
     @Transactional
@@ -92,6 +96,7 @@ class PostService(
             throw AccessDeniedException("게시글 삭제 권한이 없습니다.")
         }
         postRepository.delete(findById)
+        userLevelService.syncUserLevel(user.id)
     }
 
     private fun validateImageFile(imageFile: MultipartFile) {

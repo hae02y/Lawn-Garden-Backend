@@ -15,6 +15,7 @@ import org.example.lawngarden.common.entity.BaseEntity
 import org.example.lawngarden.domain.auths.enums.LoginType
 import org.example.lawngarden.domain.auths.enums.Role
 import org.example.lawngarden.domain.posts.entity.Post
+import org.example.lawngarden.domain.users.enums.UserLevel
 import java.time.LocalDateTime
 
 @Entity
@@ -44,7 +45,7 @@ class User(
     var like: Long = 0L,
 
     @Column(name = "level")
-    var level: Long = 0L,
+    var level: Long = UserLevel.SPROUT.level,
 
     @Column(name = "deleted_at")
     var deletedAt: LocalDateTime? = null,
@@ -53,8 +54,12 @@ class User(
     @Enumerated(EnumType.STRING)
     var type: LoginType = LoginType.NONE,
 
-    ) : BaseEntity() {
+) : BaseEntity() {
     fun getPassword(): String? = password
     fun getRole(): Role = role
+    fun getLevelName(): String = UserLevel.fromLevel(level).displayName
+    fun updateLevel(newLevel: Long) {
+        level = newLevel
+    }
 
 }

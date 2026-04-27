@@ -28,6 +28,7 @@ interface PostRepository : JpaRepository<Post, Long> {
     )
     fun searchByKeyword(@Param("keyword") keyword: String, pageable: Pageable): Page<Post>
     fun existsPostByUserAndCreatedDate(user: User, date: LocalDate?): Boolean
+    fun countByUserId(userId: Long): Long
     fun findPostById(id: Long): Post?
 
 

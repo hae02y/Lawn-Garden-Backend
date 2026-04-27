@@ -26,6 +26,8 @@ fun User.toUserDetailResponseDto(): UserDetailResponseDto = UserDetailResponseDt
     id = this.id,
     username = this.username,
     email = this.email,
+    level = this.level,
+    levelName = this.getLevelName(),
 )
 
 fun User.toUserStatsResponseDto(count : Long): UserStatsResponseDto = UserStatsResponseDto(

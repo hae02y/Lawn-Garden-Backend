@@ -4,8 +4,10 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.example.lawngarden.domain.stats.service.StatsService
 import org.example.lawngarden.domain.users.dto.UserStatsResponseDto
+import org.example.lawngarden.domain.users.service.UserLevelService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController
 @Tag(name = "Stats", description = "통계 API")
 class StatsController(
     private val statsService : StatsService,
+    private val userLevelService: UserLevelService,
 ) {
 
 
@@ -30,5 +33,12 @@ class StatsController(
     fun getTodayStats(): ResponseEntity<List<UserStatsResponseDto>> {
         val todayStats = statsService.getTodayStats()
         return ResponseEntity.ok(todayStats)
+    }
+
+    @PostMapping("/levels/sync")
+    @Operation(summary = "사용자 레벨 강제 동기화")
+    fun syncUserLevels(): ResponseEntity<Map<String, Int>> {
+        val updatedRows = userLevelService.syncAllUserLevels()
+        return ResponseEntity.ok(mapOf("updatedRows" to updatedRows))
     }
 }
