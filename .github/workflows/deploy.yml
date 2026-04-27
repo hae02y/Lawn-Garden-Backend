@@ -105,32 +105,56 @@ jobs:
             fi
             sha256sum "$jar_path"
 
+            previous_jar=""
+            for candidate in /home/lawn/lawngarden-*.jar; do
+              if [ "$candidate" = "$jar_path" ]; then
+                continue
+              fi
+              if [ -z "$previous_jar" ] || [ "$candidate" -nt "$previous_jar" ]; then
+                previous_jar="$candidate"
+              fi
+            done
+
+            nohup java -jar "$jar_path" --spring.config.additional-location=file:/home/lawn/ > /home/lawn/lawngarden.log 2>&1 &
+            new_pid=$!
+            echo "$new_pid" > /home/lawn/lawngarden.pid
+
+            startup_ok=false
+            for i in $(seq 1 30); do
+              if ! kill -0 "$new_pid" 2>/dev/null; then
+                echo "application process exited early"
+                break
+              fi
+
+              if curl -fsS "http://127.0.0.1:8080/v3/api-docs" >/dev/null 2>&1; then
+                startup_ok=true
+                break
+              fi
+
+              sleep 2
+            done
+
+            if [ "$startup_ok" != "true" ]; then
+              echo "application startup verification failed"
+              tail -n 200 /home/lawn/lawngarden.log || true
+
+              if [ -n "$previous_jar" ] && [ -f "$previous_jar" ]; then
+                echo "rolling back to previous jar: $previous_jar"
+                nohup java -jar "$previous_jar" --spring.config.additional-location=file:/home/lawn/ > /home/lawn/lawngarden.log 2>&1 &
+                rollback_pid=$!
+                echo "$rollback_pid" > /home/lawn/lawngarden.pid
+              else
+                echo "no rollback jar available"
+              fi
+
+              exit 1
+            fi
+
+            echo "application startup verified"
+
             for old_jar in /home/lawn/lawngarden-*.jar; do
               if [ "$old_jar" != "$jar_path" ]; then
                 rm -f "$old_jar"
               fi
             done
             rm -f /home/lawn/lawngarden.jar
-
-            nohup java -jar "$jar_path" --spring.config.additional-location=file:/home/lawn/ > /home/lawn/lawngarden.log 2>&1 &
-            new_pid=$!
-            echo "$new_pid" > /home/lawn/lawngarden.pid
-
-            for i in $(seq 1 30); do
-              if ! kill -0 "$new_pid" 2>/dev/null; then
-                echo "application process exited early"
-                tail -n 200 /home/lawn/lawngarden.log || true
-                exit 1
-              fi
-
-              if curl -fsS "http://127.0.0.1:8080/v3/api-docs" >/dev/null 2>&1; then
-                echo "application startup verified"
-                exit 0
-              fi
-
-              sleep 2
-            done
-
-            echo "application did not become ready in time"
-            tail -n 200 /home/lawn/lawngarden.log || true
-            exit 1
