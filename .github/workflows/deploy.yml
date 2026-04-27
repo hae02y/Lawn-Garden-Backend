@@ -85,11 +85,13 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            set -e
+            set -euo pipefail
             if [ -f /home/lawn/lawngarden.pid ]; then
               kill "$(cat /home/lawn/lawngarden.pid)" || true
               rm -f /home/lawn/lawngarden.pid
             fi
+            pkill -f '/home/lawn/lawngarden-.*\.jar' || true
+
             if [ -f /home/lawn/.env ]; then
               set -a
               . /home/lawn/.env
@@ -111,4 +113,24 @@ jobs:
             rm -f /home/lawn/lawngarden.jar
 
             nohup java -jar "$jar_path" --spring.config.additional-location=file:/home/lawn/ > /home/lawn/lawngarden.log 2>&1 &
-            echo $! > /home/lawn/lawngarden.pid
+            new_pid=$!
+            echo "$new_pid" > /home/lawn/lawngarden.pid
+
+            for i in $(seq 1 30); do
+              if ! kill -0 "$new_pid" 2>/dev/null; then
+                echo "application process exited early"
+                tail -n 200 /home/lawn/lawngarden.log || true
+                exit 1
+              fi
+
+              if curl -fsS "http://127.0.0.1:8080/v3/api-docs" >/dev/null 2>&1; then
+                echo "application startup verified"
+                exit 0
+              fi
+
+              sleep 2
+            done
+
+            echo "application did not become ready in time"
+            tail -n 200 /home/lawn/lawngarden.log || true
+            exit 1
