@@ -90,14 +90,12 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             set -euo pipefail
-            if [ -f /home/lawn/lawngarden.pid ]; then
-              old_pid="$(cat /home/lawn/lawngarden.pid || true)"
-              if [ -n "$old_pid" ] && kill -0 "$old_pid" 2>/dev/null; then
-                kill "$old_pid" || true
-              fi
-              rm -f /home/lawn/lawngarden.pid
+            if pgrep -f '/home/lawn/lawngarden-.*\.jar' >/dev/null 2>&1; then
+              pkill -TERM -f '/home/lawn/lawngarden-.*\.jar' || true
+              sleep 3
+              pkill -KILL -f '/home/lawn/lawngarden-.*\.jar' || true
             fi
-            pkill -f '/home/lawn/lawngarden-.*\.jar' || true
+            rm -f /home/lawn/lawngarden.pid
 
             if [ -f /home/lawn/.env ]; then
               set -a
