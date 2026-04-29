@@ -52,5 +52,6 @@ jwt:
   refresh-token-expiration: 1209600000   # 14일
 app:
   front-callback: ${FRONT_CALLBACK_URL:https://my-lawn.netlify.app/oauth/github}
+  version: ${APP_VERSION:0.0.1}
 image:
   path: ./

@@ -6,4 +6,5 @@ data class UserDetailResponseDto(
     val email: String,
     val level: Long,
     val levelName: String,
+    val levelBadge: String,
 )

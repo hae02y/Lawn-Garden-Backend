@@ -2,15 +2,23 @@ package org.example.lawngarden.domain.geeknews.service
 
 import org.jsoup.Jsoup
 import org.jsoup.parser.Parser
+import org.example.lawngarden.domain.geeknews.dto.GeekNewsListResponseDto
 import org.example.lawngarden.domain.geeknews.dto.GeekNewsResponseDto
+import org.example.lawngarden.domain.geeknews.dto.GeekNewsStateResponseDto
 import org.example.lawngarden.domain.geeknews.entity.GeekNewsArticle
+import org.example.lawngarden.domain.geeknews.entity.GeekNewsUserState
 import org.example.lawngarden.domain.geeknews.repository.GeekNewsArticleRepository
+import org.example.lawngarden.domain.geeknews.repository.GeekNewsUserStateRepository
+import org.example.lawngarden.domain.users.entity.User
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.w3c.dom.Element
 import java.net.URL
 import java.time.Instant
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -20,11 +28,13 @@ import javax.xml.parsers.DocumentBuilderFactory
 @Service
 class GeekNewsService(
     private val geekNewsArticleRepository: GeekNewsArticleRepository,
+    private val geekNewsUserStateRepository: GeekNewsUserStateRepository,
 ) {
     private val rssUrl = "https://feeds.feedburner.com/geeknews-feed"
     private val seoulZone: ZoneId = ZoneId.of("Asia/Seoul")
 
-    fun getGeekNews(pageable: Pageable, keyword: String?): Page<GeekNewsResponseDto> {
+    @Transactional(readOnly = true)
+    fun getGeekNews(pageable: Pageable, keyword: String?, user: User?): Page<GeekNewsResponseDto> {
         if (geekNewsArticleRepository.count() == 0L) {
             runCatching { syncGeekNews(50) }
         }
@@ -35,16 +45,95 @@ class GeekNewsService(
             geekNewsArticleRepository.findAllByTitleContainingIgnoreCaseOrderByPublishedAtDescIdDesc(keyword, pageable)
         }
 
-        return page.map {
+        val articleIds = page.content.mapNotNull { it.id }
+        val stateMap = if (user?.id == null || articleIds.isEmpty()) {
+            emptyMap()
+        } else {
+            geekNewsUserStateRepository
+                .findAllByUserIdAndArticleIdIn(user.id, articleIds)
+                .associateBy { it.article.id }
+        }
+
+        val content = page.content.map { article ->
+            val state = article.id?.let { stateMap[it] }
             GeekNewsResponseDto(
-                id = it.id,
-                sourceId = it.sourceId,
-                title = sanitizeText(it.title) ?: it.title,
-                link = it.link,
-                summary = sanitizeText(it.summary),
-                publishedAt = it.publishedAt,
+                id = article.id,
+                sourceId = article.sourceId,
+                title = sanitizeText(article.title) ?: article.title,
+                link = article.link,
+                summary = sanitizeText(article.summary),
+                publishedAt = article.publishedAt,
+                bookmarked = state?.bookmarked ?: false,
+                read = state?.readAt != null,
+                readAt = state?.readAt,
             )
         }
+
+        return PageImpl(content, pageable, page.totalElements)
+    }
+
+    @Transactional(readOnly = true)
+    fun getMyBookmarkedGeekNews(pageable: Pageable, user: User): GeekNewsListResponseDto {
+        val userId = user.id ?: throw NoSuchElementException("User id not found")
+        val page = geekNewsUserStateRepository.findAllByUserIdAndBookmarkedTrueOrderByModifiedAtDesc(userId, pageable)
+
+        val content = page.content.map { state ->
+            val article = state.article
+            GeekNewsResponseDto(
+                id = article.id,
+                sourceId = article.sourceId,
+                title = sanitizeText(article.title) ?: article.title,
+                link = article.link,
+                summary = sanitizeText(article.summary),
+                publishedAt = article.publishedAt,
+                bookmarked = state.bookmarked,
+                read = state.readAt != null,
+                readAt = state.readAt,
+            )
+        }
+
+        return GeekNewsListResponseDto(
+            items = content,
+            page = page.number,
+            size = page.size,
+            totalElements = page.totalElements,
+            totalPages = page.totalPages,
+            hasNext = page.hasNext(),
+        )
+    }
+
+    @Transactional
+    fun toggleBookmark(articleId: Long, bookmarked: Boolean, user: User): GeekNewsStateResponseDto {
+        val userId = user.id ?: throw NoSuchElementException("User id not found")
+        val article = geekNewsArticleRepository.findById(articleId)
+            .orElseThrow { NoSuchElementException("GeekNews article not found. id=$articleId") }
+        val state = geekNewsUserStateRepository.findByUserIdAndArticleId(userId, articleId)
+            ?: geekNewsUserStateRepository.save(GeekNewsUserState(user = user, article = article))
+
+        state.bookmarked = bookmarked
+        return GeekNewsStateResponseDto(
+            articleId = articleId,
+            bookmarked = state.bookmarked,
+            read = state.readAt != null,
+            readAt = state.readAt,
+        )
+    }
+
+    @Transactional
+    fun markRead(articleId: Long, user: User): GeekNewsStateResponseDto {
+        val userId = user.id ?: throw NoSuchElementException("User id not found")
+        val article = geekNewsArticleRepository.findById(articleId)
+            .orElseThrow { NoSuchElementException("GeekNews article not found. id=$articleId") }
+        val state = geekNewsUserStateRepository.findByUserIdAndArticleId(userId, articleId)
+            ?: geekNewsUserStateRepository.save(GeekNewsUserState(user = user, article = article))
+
+        state.markRead(LocalDateTime.now())
+        return GeekNewsStateResponseDto(
+            articleId = articleId,
+            bookmarked = state.bookmarked,
+            read = true,
+            readAt = state.readAt,
+        )
     }
 
     fun syncGeekNews(maxItems: Int = 50): Int {

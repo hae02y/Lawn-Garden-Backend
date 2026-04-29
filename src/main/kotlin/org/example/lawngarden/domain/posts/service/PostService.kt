@@ -88,6 +88,7 @@ class PostService(
         return postRepository.save(findPostById.updatePost(post, imageName))
     }
 
+    @Transactional
     fun deletePost(postId: Long, user: User) {
         val findById: Post =
             postRepository.findPostById(postId) ?: throw NoSuchElementException("해당 ID의 게시글이 존재하지 않습니다. id=$postId")

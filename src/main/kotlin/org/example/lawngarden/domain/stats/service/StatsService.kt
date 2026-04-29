@@ -16,6 +16,12 @@ class StatsService(
     private val postRepository: PostRepository
 ) {
 
+    private fun Tuple.toUserAndPostCount(): Pair<User, Long> {
+        val user = this["user"] as User
+        val postCount = (this["postCount"] as Number).toLong()
+        return user to postCount
+    }
+
 
     fun getWeeklyStats() : List<UserStatsResponseDto> {
 
@@ -25,14 +31,14 @@ class StatsService(
         val sunday : LocalDate = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
 
         val postList : List<Tuple> = postRepository.findAllByCreatedDateBetween(monday, sunday)
-        val pairs = postList.map { tuple -> tuple["user"] as User to tuple["postCount"] as Long }
+        val pairs = postList.map { tuple -> tuple.toUserAndPostCount() }
         val toList : List<UserStatsResponseDto> = pairs.stream().map { x -> x.first.toUserStatsResponseDto(x.second) }.toList()
         return toList;
     }
 
     fun getTodayStats(): List<UserStatsResponseDto> {
         val postList: List<Tuple> = postRepository.findAllByCreatedDateBetween(LocalDate.now(), LocalDate.now())
-        val pairs = postList.map { tuple -> tuple["user"] as User to tuple["postCount"] as Long }
+        val pairs = postList.map { tuple -> tuple.toUserAndPostCount() }
         return pairs.map { it.first.toUserStatsResponseDto(it.second) }
     }
 }

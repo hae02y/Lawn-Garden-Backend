@@ -9,4 +9,7 @@ data class GeekNewsResponseDto(
     val link: String,
     val summary: String?,
     val publishedAt: LocalDateTime?,
+    val bookmarked: Boolean = false,
+    val read: Boolean = false,
+    val readAt: LocalDateTime? = null,
 )

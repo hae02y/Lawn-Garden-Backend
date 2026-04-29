@@ -9,6 +9,7 @@ import org.example.lawngarden.domain.users.dto.RegisterRequestDto
 import org.example.lawngarden.domain.users.dto.UserDetailResponseDto
 import org.example.lawngarden.domain.users.dto.UserStatsResponseDto
 import org.example.lawngarden.domain.users.entity.User
+import org.example.lawngarden.domain.users.enums.UserLevel
 import java.time.LocalDate
 
 
@@ -28,13 +29,14 @@ fun User.toUserDetailResponseDto(): UserDetailResponseDto = UserDetailResponseDt
     email = this.email,
     level = this.level,
     levelName = this.getLevelName(),
+    levelBadge = UserLevel.fromLevel(this.level).badgeLabel,
 )
 
 fun User.toUserStatsResponseDto(count : Long): UserStatsResponseDto = UserStatsResponseDto(
     id = this.id,
     username = this.username,
     email = this.email,
-    commitCount = count.toString()
+    commitCount = count
 )
 
 fun Post.toPostResponseDto() : PostResponseDto = PostResponseDto(

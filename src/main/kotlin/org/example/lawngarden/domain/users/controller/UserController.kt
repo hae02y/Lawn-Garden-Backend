@@ -6,16 +6,21 @@ import org.example.lawngarden.domain.auths.details.UserDetailsImpl
 import org.example.lawngarden.domain.mapper.toUserDetailResponseDto
 import org.example.lawngarden.domain.users.dto.RegisterRequestDto
 import org.example.lawngarden.domain.users.dto.UserDetailResponseDto
+import org.example.lawngarden.domain.users.dto.UserLevelHistoryResponseDto
+import org.example.lawngarden.domain.users.dto.UserLevelProgressResponseDto
 import org.example.lawngarden.domain.users.service.UserService
+import org.example.lawngarden.domain.users.service.UserLevelService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
+import java.util.NoSuchElementException
 
 @RestController
 @RequestMapping("/api/v1/users")
 @Tag(name = "Users", description = "사용자 API")
 class UserController(
-    private val userService: UserService
+    private val userService: UserService,
+    private val userLevelService: UserLevelService,
 ) {
     @PostMapping("/register")
     @Operation(summary = "회원가입")
@@ -51,6 +56,25 @@ class UserController(
     fun getTodayUser(@RequestParam commit: String): ResponseEntity<List<UserDetailResponseDto>> {
         val findTodayCommitUser = userService.findTodayCommitUser(commit)
         return ResponseEntity.ok(findTodayCommitUser)
+    }
+
+    @GetMapping("/me/level-progress")
+    @Operation(summary = "내 레벨 진행도 조회")
+    fun getMyLevelProgress(
+        @AuthenticationPrincipal userDetailsImpl: UserDetailsImpl,
+    ): ResponseEntity<UserLevelProgressResponseDto> {
+        val userId = userDetailsImpl.user.id ?: throw NoSuchElementException("User id not found")
+        return ResponseEntity.ok(userLevelService.getLevelProgress(userId))
+    }
+
+    @GetMapping("/me/level-history")
+    @Operation(summary = "내 레벨업 이력 조회")
+    fun getMyLevelHistory(
+        @AuthenticationPrincipal userDetailsImpl: UserDetailsImpl,
+        @RequestParam("size", defaultValue = "20") size: Int,
+    ): ResponseEntity<List<UserLevelHistoryResponseDto>> {
+        val userId = userDetailsImpl.user.id ?: throw NoSuchElementException("User id not found")
+        return ResponseEntity.ok(userLevelService.getLevelHistories(userId, size))
     }
 
 

@@ -4,6 +4,5 @@ data class UserStatsResponseDto(
     val id: Long?,
     val username: String,
     val email: String,
-    val commitCount: String
+    val commitCount: Long
 )
-

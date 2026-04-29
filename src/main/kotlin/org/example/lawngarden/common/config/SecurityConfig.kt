@@ -48,6 +48,7 @@ class SecurityConfig(
                     "/api/v1/users/register",
                     "/api/v1/auth/login",
                     "/api/v1/auth/refresh",
+                    "/api/v1/system/**",
                     "/api/v1/oauth2/**",
                     "/oauth2/authorization/**",
                     "/login/oauth2/code/**",
@@ -88,7 +89,7 @@ class SecurityConfig(
             "https://lawngarden.netlify.app",
             "https://my-lawn.netlify.app",
         ).distinct()
-        config.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
+        config.allowedMethods = listOf("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
         config.allowedHeaders = listOf("*")
         config.allowCredentials = false
 
