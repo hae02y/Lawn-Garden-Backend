@@ -1,4 +1,4 @@
-package org.example.lawngarden.domain.notifications.entity
+package org.example.lawngarden.domain.achievements.entity
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -11,14 +11,18 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 import org.example.lawngarden.common.entity.BaseEntity
-import org.example.lawngarden.domain.notifications.enums.NotificationSeverity
+import org.example.lawngarden.domain.achievements.enums.AchievementCode
 import org.example.lawngarden.domain.users.entity.User
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Entity
-@Table(name = "user_notifications")
-class UserNotification(
+@Table(
+    name = "user_achievements",
+    uniqueConstraints = [UniqueConstraint(columnNames = ["user_id", "code"])],
+)
+class UserAchievement(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
@@ -27,29 +31,10 @@ class UserNotification(
     @JoinColumn(name = "user_id", nullable = false)
     val user: User,
 
-    @Column(nullable = false, length = 120)
-    val title: String,
-
-    @Column(nullable = false, length = 1000)
-    val message: String,
-
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    val severity: NotificationSeverity,
-
     @Column(nullable = false, length = 80)
-    val code: String,
-
-    @Column(name = "deep_link", length = 255)
-    val deepLink: String? = null,
-
-    @Column(name = "reference_date")
-    val referenceDate: LocalDate? = null,
+    val code: AchievementCode,
 
     @Column(nullable = false)
-    var isRead: Boolean = false,
-) : BaseEntity() {
-    fun markRead() {
-        isRead = true
-    }
-}
+    val unlockedAt: LocalDateTime = LocalDateTime.now(),
+) : BaseEntity()

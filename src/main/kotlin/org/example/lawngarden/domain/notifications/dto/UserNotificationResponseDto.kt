@@ -10,6 +10,7 @@ data class UserNotificationResponseDto(
     val message: String,
     val severity: NotificationSeverity,
     val code: String,
+    val deepLink: String?,
     val referenceDate: LocalDate?,
     val isRead: Boolean,
     val createdAt: LocalDateTime?,
