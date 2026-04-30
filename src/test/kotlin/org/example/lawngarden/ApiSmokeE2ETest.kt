@@ -77,6 +77,17 @@ class ApiSmokeE2ETest(
         val mailSettingsGetResponse = authedGet(userToken, "/api/v1/mails/me/settings")
         assertThat(mailSettingsGetResponse.statusCode).isEqualTo(HttpStatus.OK)
 
+        val refreshedNotificationResponse = authedExchange(
+            token = userToken,
+            path = "/api/v1/notifications/me/refresh",
+            method = HttpMethod.POST,
+            body = null,
+        )
+        assertThat(refreshedNotificationResponse.statusCode).isEqualTo(HttpStatus.OK)
+
+        val notificationListResponse = authedGet(userToken, "/api/v1/notifications/me")
+        assertThat(notificationListResponse.statusCode).isEqualTo(HttpStatus.OK)
+
         val article = geekNewsArticleRepository.save(
             GeekNewsArticle(
                 sourceId = "test-source-${UUID.randomUUID()}",
@@ -116,6 +127,14 @@ class ApiSmokeE2ETest(
             body = null,
         )
         assertThat(adminSyncResponse.statusCode).isEqualTo(HttpStatus.OK)
+
+        val markAllNotificationReadResponse = authedExchange(
+            token = userToken,
+            path = "/api/v1/notifications/me/read-all",
+            method = HttpMethod.POST,
+            body = null,
+        )
+        assertThat(markAllNotificationReadResponse.statusCode).isEqualTo(HttpStatus.OK)
 
         val adminLogsResponse = authedGet(adminToken, "/api/v1/admin/geeknews/sync-logs?page=0&size=10")
         assertThat(adminLogsResponse.statusCode).isEqualTo(HttpStatus.OK)

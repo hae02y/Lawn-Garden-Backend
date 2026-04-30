@@ -29,6 +29,8 @@ interface PostRepository : JpaRepository<Post, Long> {
     fun searchByKeyword(@Param("keyword") keyword: String, pageable: Pageable): Page<Post>
     fun existsPostByUserAndCreatedDate(user: User, date: LocalDate?): Boolean
     fun countByUserId(userId: Long): Long
+    @Query("SELECT DISTINCT p.createdDate FROM Post p WHERE p.user.id = :userId AND p.createdDate IS NOT NULL ORDER BY p.createdDate DESC")
+    fun findDistinctCreatedDatesByUserId(@Param("userId") userId: Long): List<LocalDate>
     fun findPostById(id: Long): Post?
 
 

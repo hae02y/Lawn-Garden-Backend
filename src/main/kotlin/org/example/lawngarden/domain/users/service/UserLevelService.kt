@@ -1,6 +1,7 @@
 package org.example.lawngarden.domain.users.service
 
 import org.example.lawngarden.domain.posts.repository.PostRepository
+import org.example.lawngarden.domain.notifications.service.UserNotificationService
 import org.example.lawngarden.domain.users.dto.UserLevelHistoryResponseDto
 import org.example.lawngarden.domain.users.dto.UserLevelProgressResponseDto
 import org.example.lawngarden.domain.users.entity.User
@@ -18,6 +19,7 @@ class UserLevelService(
     private val userRepository: UserRepository,
     private val postRepository: PostRepository,
     private val userLevelHistoryRepository: UserLevelHistoryRepository,
+    private val userNotificationService: UserNotificationService,
 ) {
     @Transactional
     fun syncAllUserLevels(): Int {
@@ -103,5 +105,6 @@ class UserLevelService(
                 postCount = postCount,
             )
         )
+        userNotificationService.publishLevelUpNotification(user, newLevel, postCount)
     }
 }
